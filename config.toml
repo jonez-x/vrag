@@ -29,9 +29,9 @@ enabled = false            # wikilink neighbour boost; neutral on dev, so off by
 boost = 0.05               # bonus × best min-max-normalised score of a linked note
 
 [rerank]
-enabled = false            # cross-encoder reranker (PR 5)
-model = "BAAI/bge-reranker-v2-m3"
-top_n = 30
+enabled = false            # cross-encoder reranker; needs `uv sync --extra rerank`, else skipped
+model = "BAAI/bge-reranker-v2-m3"  # Hugging Face id, downloaded on first use
+top_n = 30                 # first-stage notes rescored (all their chunks, best one counts)
 
 [search]
 k = 5                      # results returned (note-level, deduplicated)
