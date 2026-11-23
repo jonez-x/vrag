@@ -41,7 +41,7 @@ class FusionConfig:
 @dataclass
 class GraphConfig:
     enabled: bool = False
-    boost: float = 0.1
+    boost: float = 0.05
 
 
 @dataclass

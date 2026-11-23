@@ -41,6 +41,23 @@ def parse_note(rel_path: str, text: str) -> Note:
     return Note(path=rel_path, title=title, body=text, meta=meta, links=links)
 
 
+def resolve_note(notes: dict[str, Note], ref: str) -> Note | None:
+    """Find a note by vault-relative path (with or without .md) or by title (wikilink style)."""
+    ref = ref.strip().replace("\\", "/")
+    if not ref:
+        return None
+    if ref in notes:
+        return notes[ref]
+    if f"{ref}.md" in notes:
+        return notes[f"{ref}.md"]
+    low = ref.removesuffix(".md").lower()
+    by_path = [n for p, n in notes.items() if p.removesuffix(".md").lower() == low]
+    if by_path:
+        return by_path[0]
+    by_title = [n for n in notes.values() if n.title.lower() == low]
+    return min(by_title, key=lambda n: n.path) if by_title else None
+
+
 def load_vault(root: str | Path) -> list[Note]:
     root = Path(root)
     if not root.is_dir():
