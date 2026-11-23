@@ -93,7 +93,7 @@ def test_decompound_matches_compound_query_to_parts():
 
     docs = ["Die Kette am Fahrrad ölen", "Brot backen mit Sauerteig"]
     on = BM25Index(docs, BM25Config(stemming=True, stopwords=True, decompound=True))
-    off = BM25Index(docs, BM25Config(stemming=True, stopwords=True))
+    off = BM25Index(docs, BM25Config(stemming=True, stopwords=True, decompound=False))
     assert on.scores("Fahrradkette")[0] > 0 and on.scores("Fahrradkette")[1] == 0
     assert off.scores("Fahrradkette") == [0.0, 0.0]
 
@@ -107,7 +107,7 @@ def test_acronyms_from_capitalised_runs():
     assert acronyms("die Kette ölen") == []
     docs = ["Klausur in Machine Learning", "Brot backen"]
     on = BM25Index(docs, BM25Config(acronyms=True))
-    assert on.scores("ML")[0] > 0 and BM25Index(docs, BM25Config()).scores("ML") == [0.0, 0.0]
+    assert on.scores("ML")[0] > 0 and BM25Index(docs, BM25Config(acronyms=False)).scores("ML") == [0.0, 0.0]
 
 
 def test_stem_german_conflates_inflections():
@@ -120,3 +120,27 @@ def test_stem_german_conflates_inflections():
     assert stem_german("1000er") == stem_german("1000") == "1000"  # "1000er" matches "1000 m"
     toks = tokenize("Die langen Kontexte", stemming=True, stopwords=True)
     assert toks == tokenize("lange Kontexten", stemming=True) and len(toks) == 2
+
+
+def test_builtin_defaults_match_config_toml():
+    # An installed vrag without a config.toml must score like the repo default.
+    assert Config() == Config.load(ROOT / "config.toml")
+    assert Config.load(ROOT / "missing.toml") == Config()
+
+
+def test_cli_version_matches_package_metadata(capsys):
+    import tomllib
+    from importlib.metadata import version
+
+    import pytest
+
+    from vrag import __version__
+    from vrag.cli import main
+
+    with pytest.raises(SystemExit) as exc:
+        main(["--version"])
+    assert exc.value.code == 0
+    assert capsys.readouterr().out.strip() == f"vrag {__version__}"
+    assert version("vrag-obsidian") == __version__
+    meta = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
+    assert meta["name"] == "vrag-obsidian" and meta["scripts"]["vrag"] == "vrag.cli:main"

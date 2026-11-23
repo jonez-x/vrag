@@ -1,0 +1,61 @@
+name: publish
+
+# Builds sdist + wheel on a version tag and uploads them to PyPI via Trusted Publishing
+# (no API token). One-time setup on pypi.org: see "Releasing" in README.md.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+
+      - name: Tests
+        run: |
+          uv sync
+          uv run pytest -q
+
+      - name: Tag matches package version
+        run: |
+          version=$(uv run python -c "import vrag; print(vrag.__version__)")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME does not match vrag.__version__ $version"; exit 1
+          fi
+
+      - name: Build
+        run: uv build
+
+      - name: Smoke-test the wheel
+        run: uv run --isolated --no-project --with "$PWD"/dist/*.whl --directory "$RUNNER_TEMP" vrag --version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/vrag-obsidian/
+    permissions:
+      id-token: write  # OIDC token for PyPI Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1

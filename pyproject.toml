@@ -1,15 +1,41 @@
 [project]
-name = "vrag"
-version = "0.1.0"
+# "vrag" is taken on PyPI; the import package and the CLI command stay `vrag`.
+name = "vrag-obsidian"
+dynamic = ["version"]
 description = "Local-first retrieval for Obsidian vaults — TUI, CLI & MCP server, tuned by a self-improving eval loop"
 readme = "README.md"
 license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Jonas Taigel" }]
 requires-python = ">=3.11"
+keywords = ["obsidian", "retrieval", "search", "bm25", "rag", "mcp", "tui", "markdown"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Natural Language :: German",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Text Processing :: Indexing",
+    "Topic :: Text Processing :: Markup :: Markdown",
+]
 dependencies = [
     "pyyaml>=6.0",
     "sqlite-vec>=0.1.6",
     "textual>=0.80",
 ]
+
+[project.urls]
+Homepage = "https://github.com/jonez-x/vrag"
+Repository = "https://github.com/jonez-x/vrag"
+Issues = "https://github.com/jonez-x/vrag/issues"
+Changelog = "https://github.com/jonez-x/vrag/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 rerank = ["sentence-transformers>=3.0"]  # cross-encoder reranker; pulls in torch
@@ -21,11 +47,18 @@ vrag = "vrag.cli:main"
 dev = ["pytest>=8.0"]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27"]  # PEP 639 license-files
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/vrag/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/vrag"]
+
+[tool.hatch.build.targets.sdist]
+# Source and docs only: tests need the sample vault and eval set, which stay in the repo.
+include = ["src/vrag", "README.md", "CHANGELOG.md", "LICENSE", "config.toml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
