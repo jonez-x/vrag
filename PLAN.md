@@ -17,7 +17,7 @@ Status: `- [ ]` open · `- [x]` done · `- [!]` blocked: reason
 - [x] **5 · `feat/rerank`** — #8
   - Scope: Cross-encoder `bge-reranker-v2-m3` (optional extra)
   - Done when: Toggleable, measured
-- [ ] **6 · `feat/tui`** — app merged in #5; demo GIF still missing (SVG screenshots only)
+- [x] **6 · `feat/tui`** — #5, demo GIF in #10
   - Scope: Textual app: Search (per-stage score breakdown), Vaults, Settings (edits `config.toml`), Eval (score history) · Obsidian theme + logo from `ui/logo.py`
   - Done when: Demo GIF in README
 - [x] **7 · `feat/mcp`** — #6
@@ -26,7 +26,7 @@ Status: `- [ ]` open · `- [x]` done · `- [!]` blocked: reason
 - [!] **8 · `loop/run-02`** — blocked: loop merged in #9 (dev R@5 1.0 default + full); held-out check must be run by a human
   - Scope: Loop over the full pipeline
   - Done when: Holdout Recall@5 ≥ 0.95
-- [ ] **9 · `release/v0.1`**
+- [x] **9 · `release/v0.1`** — #10, tagged `v0.1.0` (PyPI upload pending trusted-publisher setup)
   - Scope: PyPI, README with recall-over-iterations chart, demo GIF
   - Done when: Tagged
 

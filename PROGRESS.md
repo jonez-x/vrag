@@ -66,3 +66,9 @@ Template:
 - **Eval (dev):** default 0.95 / 0.8833 → **1.0 / 0.9208** (0 misses) · full (dense + graph) 1.0 / 0.9425 → **1.0 / 0.9875** — orchestrator reproduced both
 - **Learnings:** compound splitting fixed "Fahrradkette"; acronyms fixed "ML-Klausur". Splitting before stemming sidesteps the over-truncating stemmer.
 - **Open problems:** done criterion (held-out R@5 ≥ 0.95) not checked — human must run it for default and full config. Acronym heuristic and `k1` / `dense_weight` were tuned on 40 dev queries → overfitting risk; acronyms may add noisy terms on other vaults.
+
+## 2026-11-23 — PR 10 `release/v0.1`
+- **Result:** merged (#10), tagged `v0.1.0` — PyPI metadata as `vrag-obsidian` (CLI stays `vrag`, `vrag --version`), `publish.yml` (Trusted Publishing on `v*` tags), README rewrite with recall chart (light/dark SVG) and demo GIF (`scripts/demo_gif.py`, Pillow via `uv run --with pillow` only), CHANGELOG; built-in config defaults now match `config.toml`
+- **Eval (dev):** default 1.0 / 0.9208 → unchanged
+- **Learnings:** first release worker hit the usage limit mid-run; its pushed commits were picked up by a second worker without rework. Renaming the package to `vrag-obsidian` left a stale venv entry point locally — `uv sync --reinstall-package vrag-obsidian` fixes it.
+- **Open problems:** PyPI upload needs a one-time pending publisher on pypi.org (project `vrag-obsidian`, repo `jonez-x/vrag`, workflow `publish.yml`, environment `pypi`), then re-run the publish job for `v0.1.0`. Demo GIF shows BM25 only (recorded without Ollama). Held-out split still unchecked.
