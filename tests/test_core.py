@@ -98,6 +98,18 @@ def test_decompound_matches_compound_query_to_parts():
     assert off.scores("Fahrradkette") == [0.0, 0.0]
 
 
+def test_acronyms_from_capitalised_runs():
+    from vrag.config import BM25Config
+    from vrag.retrieve.bm25 import BM25Index, acronyms
+
+    assert acronyms("Prüfung in Machine Learning am Montag") == ["ml"]
+    assert acronyms("Reciprocal Rank Fusion") == ["rr", "rf", "rrf"]
+    assert acronyms("die Kette ölen") == []
+    docs = ["Klausur in Machine Learning", "Brot backen"]
+    on = BM25Index(docs, BM25Config(acronyms=True))
+    assert on.scores("ML")[0] > 0 and BM25Index(docs, BM25Config()).scores("ML") == [0.0, 0.0]
+
+
 def test_stem_german_conflates_inflections():
     from vrag.retrieve.bm25 import stem_german, tokenize
 

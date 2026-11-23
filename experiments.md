@@ -105,3 +105,14 @@ A change that worsens (a) or (b) is reverted.
 - Result: (a) full 1.0 / 0.9812 → unchanged · (b) default 0.975 / 0.8958 → 0.975 / 0.9083 — **kept**.
 - Learning: the TUI settings test hard-coded the repo's k1 value; it now checks "unchanged after invalid input"
   against the value it read, same intent. d08 is the only miss left in (b).
+
+## Iteration 6 — acronym terms from capitalised word runs (`bm25.acronyms`)
+- Why: the only miss left in (b) — and the only non-rank-1 query in (a) — is d08 "ML-Klausur": the note
+  writes "Machine Learning", never "ML". Abbreviations of multi-word names are a generic vocabulary gap.
+  Re-testing `prefix_title` and b (0.5–0.75) at k1 = 1.2 is flat or worse, so parameters are exhausted.
+- Change: new `bm25.acronyms` flag. At indexing, each run of 2–3 consecutive capitalised words in a
+  chunk adds the lowercase initials as an extra term ("Machine Learning" → "ml"). Queries unchanged
+  (an acronym in the query is already a token).
+- Result: (a) full 1.0 / 0.9812 → 1.0 / 0.9875 · (b) default 0.975 / 0.9083 → 1.0 / 0.9208 — **kept**.
+- Learning: d08 now retrieved in both. Risk to watch: in German every noun is capitalised, so noun–noun
+  runs produce spurious initials; harmless here because queries rarely contain 2–3 letter tokens.

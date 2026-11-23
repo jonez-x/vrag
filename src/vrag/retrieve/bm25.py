@@ -68,6 +68,19 @@ def split_compound(token: str, vocab: set[str], stem: bool = False) -> list[str]
     return []
 
 
+_CAP_RUN_RE = re.compile(r"[A-ZÄÖÜ][a-zäöüß]+(?:[ -][A-ZÄÖÜ][a-zäöüß]+)+")
+
+
+def acronyms(text: str) -> list[str]:
+    """Initials of each 2–3 word window in runs of capitalised words ("Machine Learning" → "ml")."""
+    out = []
+    for run in _CAP_RUN_RE.findall(text):
+        initials = [w[0].lower() for w in re.split(r"[ -]", run)]
+        for n in (2, 3):
+            out.extend("".join(initials[i:i + n]) for i in range(len(initials) - n + 1))
+    return out
+
+
 class BM25Index:
     def __init__(self, docs: list[str], cfg: BM25Config):
         self.cfg = cfg
@@ -75,6 +88,9 @@ class BM25Index:
         stem = stem_german if cfg.stemming else (lambda t: t)
         self.vocab = {stem(t) for ts in raw for t in ts} if cfg.decompound else set()
         self.tfs = [Counter(self._terms(ts)) for ts in raw]
+        if cfg.acronyms:
+            for tf, d in zip(self.tfs, docs):
+                tf.update(acronyms(d))
         self.lens = [sum(tf.values()) for tf in self.tfs]
         self.avgdl = (sum(self.lens) / len(self.lens)) if self.lens else 0.0
         df: Counter = Counter()

@@ -22,6 +22,7 @@ class BM25Config:
     stemming: bool = False
     stopwords: bool = False
     decompound: bool = False
+    acronyms: bool = False
 
 
 @dataclass
