@@ -12,6 +12,7 @@ from .retrieve.bm25 import BM25Index
 from .retrieve.dense import DenseIndex, Embedder, EmbedderUnavailable
 from .retrieve.fusion import best_per_group, rrf
 from .retrieve.graph import LinkGraph, apply_boost
+from .retrieve.rerank import CrossEncoder, Reranker, RerankerUnavailable
 from .vault import Note, load_vault
 
 
@@ -29,15 +30,19 @@ class Hit:
 
 
 class Engine:
-    def __init__(self, config: Config | None = None, embedder: Embedder | None = None):
+    def __init__(self, config: Config | None = None, embedder: Embedder | None = None,
+                 cross_encoder: CrossEncoder | None = None):
         self.config = config or Config()
         self.embedder = embedder  # None → OllamaEmbedder from config.dense
+        self.cross_encoder = cross_encoder  # None → sentence-transformers CrossEncoder from config.rerank
         self.notes: dict[str, Note] = {}
         self.chunks: list[Chunk] = []
         self._bm25: BM25Index | None = None
         self._dense: DenseIndex | None = None
         self._graph: LinkGraph | None = None
+        self._reranker: Reranker | None = None
         self._first_chunk: dict[str, int] = {}  # note path → index of its first chunk
+        self._note_chunks: dict[str, list[int]] = {}  # note path → indices of all its chunks
         self.warnings: list[str] = []
 
     def index(self, vault: str | Path) -> Engine:
@@ -47,15 +52,29 @@ class Engine:
         texts = [c.text for c in self.chunks]
         if self.config.bm25.enabled:
             self._bm25 = BM25Index(texts, self.config.bm25)
-        self._first_chunk = {}
+        self._first_chunk, self._note_chunks = {}, {}
         for i, c in enumerate(self.chunks):
             self._first_chunk.setdefault(c.note_path, i)
+            self._note_chunks.setdefault(c.note_path, []).append(i)
         self._graph = LinkGraph(self.notes) if self.config.graph.enabled else None
         if self.config.dense.enabled:
             try:
                 self._dense = DenseIndex(texts, self.config.dense, self.embedder)
             except EmbedderUnavailable as e:
                 self._dense_unavailable(e)
+        keep = self._reranker is not None and self._reranker.model == self.config.rerank.model
+        if not self.config.rerank.enabled:
+            self._reranker = None
+        elif keep:  # model load takes seconds; reuse it across re-indexes
+            self._reranker.cfg = self.config.rerank
+        else:
+            try:
+                self._reranker = Reranker(self.config.rerank, self.cross_encoder)
+            except RerankerUnavailable as e:
+                self._reranker = None
+                msg = f"vrag: reranking disabled — {e}; using the first-stage ranking"
+                self.warnings.append(msg)
+                print(msg, file=sys.stderr)
         return self
 
     def _dense_unavailable(self, err: EmbedderUnavailable) -> None:
@@ -98,7 +117,16 @@ class Engine:
             final = apply_boost(scores, bonus)
         else:
             final = scores
-        top = sorted(final.items(), key=lambda kv: kv[1], reverse=True)[:k]
+        ranked = sorted(final.items(), key=lambda kv: kv[1], reverse=True)
+        reranked: dict[str, float] = {}
+        if self._reranker is not None:
+            pool = [p for p, _ in ranked[: self.config.rerank.top_n]]
+            passages = {p: [self.chunks[i].text for i in self._note_chunks[p]] for p in pool}
+            reranked = self._reranker.rerank(query, pool, passages)
+            # reranked notes first (by cross-encoder score), the rest keep first-stage order
+            head = sorted(((p, reranked[p]) for p in pool if p in reranked), key=lambda kv: kv[1], reverse=True)
+            ranked = head + [(p, s) for p, s in ranked if p not in reranked]
+        top = ranked[:k]
 
         best = {name: {p: (rank, i) for rank, (p, i) in enumerate(r)} for name, r in per_stage.items()}
         hits: list[Hit] = []
@@ -112,6 +140,8 @@ class Engine:
                 breakdown["rrf"] = scores[path]
             if self._graph is not None:
                 breakdown["graph"] = bonus.get(path, 0.0)
+            if path in reranked:
+                breakdown["rerank"] = reranked[path]
             hits.append(Hit(c.note_path, c.heading, _snippet(c.text), score, breakdown))
         return hits
 
