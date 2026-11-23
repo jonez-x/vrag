@@ -47,6 +47,12 @@ def test_rrf_rewards_agreement():
     assert fused["a"] > fused["c"] and fused["c"] == fused["d"]
 
 
+def test_rrf_weights_break_ties_toward_heavier_ranking():
+    fused = rrf([["a", "b"], ["b", "a"]], k=60, weights=[1.0, 1.2])
+    assert fused["b"] > fused["a"]
+    assert fused["b"] == pytest.approx(1 / 62 + 1.2 / 61)
+
+
 def test_best_per_group_dedups_and_skips_zero():
     scores = [0.2, 0.9, 0.5, 0.0]
     groups = ["x", "y", "x", "z"]

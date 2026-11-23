@@ -89,15 +89,16 @@ def test_settings_save_preserves_comments_and_reindexes(make_app):
         await pilot.press("f1", *"pasta")
         assert app.query_one("#results", DataTable).row_count <= 2
 
+        k1 = app.config.bm25.k1
         app.query_one("#cfg-bm25-k1", Input).value = "abc"  # invalid → not written
         await pilot.press("ctrl+s")
-        assert app.config.bm25.k1 == 1.5
+        assert app.config.bm25.k1 == k1
 
     drive(app, script)
     text = app.config_path.read_text(encoding="utf-8")
     assert "k = 2                      # results returned" in text
     assert "prefix_title = true" in text and "# vrag retrieval pipeline config." in text
-    assert "k1 = 1.5" in text
+    assert f"k1 = {app.config.bm25.k1}" in text
 
 
 def test_vaults_add_switch_and_missing(make_app, tmp_path):

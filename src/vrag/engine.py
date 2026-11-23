@@ -109,7 +109,9 @@ class Engine:
             ((name, ranking),) = per_stage.items()
             scores = {p: stages[name][i] for p, i in ranking}
         else:  # fuse note rankings, so notes with many matching chunks get no extra weight
-            scores = rrf([[p for p, _ in r] for r in per_stage.values()], self.config.fusion.rrf_k)
+            fc = self.config.fusion
+            weights = [getattr(fc, f"{name}_weight", 1.0) for name in per_stage]
+            scores = rrf([[p for p, _ in r] for r in per_stage.values()], fc.rrf_k, weights)
         bonus: dict[str, float] = {}
         if self._graph is not None:
             bonus = {p: b for p, b in self._graph.boosts(scores, self.config.graph.boost).items()

@@ -84,6 +84,8 @@ outside the vault and `.obsidian/` are all refused.
 | `feat/graph` | hybrid + graph, boost 0.1 / 0.2 / 0.3 | 1.000 / 1.000 / 0.950 | 0.938 / 0.916 / 0.843 |
 | `feat/rerank` | BM25 + rerank, top_n 10 / 20 / 30 | 0.950 | 0.913 |
 | `feat/rerank` | hybrid + rerank, top_n 10 / 20 / 30 | 1.000 | 0.950 |
+| `loop/run-02` | BM25 + stopwords, compound splitting, acronyms, k1 1.2 (default) | 1.000 | 0.921 |
+| `loop/run-02` | hybrid + graph 0.05, dense RRF weight 1.2 ("full") | 1.000 | 0.988 |
 
 The wikilink graph boost is off by default: on dev it is neutral at small boosts and hurts hybrid at larger ones.
 

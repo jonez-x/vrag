@@ -19,10 +19,11 @@ def best_per_group(scores: Sequence[float], groups: Sequence[Hashable]) -> list[
     return out
 
 
-def rrf(rankings: Sequence[Sequence[Hashable]], k: int = 60) -> dict[Hashable, float]:
-    """Reciprocal Rank Fusion: sum over rankings of 1 / (k + rank), rank 1-based."""
+def rrf(rankings: Sequence[Sequence[Hashable]], k: int = 60,
+        weights: Sequence[float] | None = None) -> dict[Hashable, float]:
+    """Reciprocal Rank Fusion: sum over rankings of weight / (k + rank), rank 1-based."""
     fused: dict[Hashable, float] = {}
-    for ranking in rankings:
+    for ranking, w in zip(rankings, weights or [1.0] * len(rankings)):
         for r, key in enumerate(ranking, 1):
-            fused[key] = fused.get(key, 0.0) + 1.0 / (k + r)
+            fused[key] = fused.get(key, 0.0) + w / (k + r)
     return fused

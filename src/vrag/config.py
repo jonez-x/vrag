@@ -21,6 +21,8 @@ class BM25Config:
     b: float = 0.75
     stemming: bool = False
     stopwords: bool = False
+    decompound: bool = False
+    acronyms: bool = False
 
 
 @dataclass
@@ -36,6 +38,8 @@ class DenseConfig:
 class FusionConfig:
     method: str = "rrf"
     rrf_k: int = 60
+    bm25_weight: float = 1.0
+    dense_weight: float = 1.0
 
 
 @dataclass
