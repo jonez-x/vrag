@@ -68,6 +68,14 @@ outside the vault and `.obsidian/` are all refused.
 | baseline | BM25, heading chunks | 0.838 | 0.742 |
 | `feat/dense` | dense only (`bge-m3`) | 1.000 | 0.967 |
 | `feat/dense` | hybrid BM25 + dense, note-level RRF (k=60) | 0.925 | 0.852 |
+| `loop/run-01` + `feat/dense` | BM25 + stemming/stopwords (default) | 0.950 | 0.883 |
+| `loop/run-01` + `feat/dense` | hybrid BM25 + dense | 1.000 | 0.943 |
+| `feat/graph` | BM25 + graph, boost 0.05 / 0.1 / 0.2 | 0.950 | 0.883 |
+| `feat/graph` | BM25 + graph, boost 0.3 | 0.950 | 0.896 |
+| `feat/graph` | hybrid + graph, boost 0.05 | 1.000 | 0.943 |
+| `feat/graph` | hybrid + graph, boost 0.1 / 0.2 / 0.3 | 1.000 / 1.000 / 0.950 | 0.938 / 0.916 / 0.843 |
+
+The wikilink graph boost is off by default: on dev it is neutral at small boosts and hurts hybrid at larger ones.
 
 ## How the loop works
 ```

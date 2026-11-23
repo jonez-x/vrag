@@ -25,8 +25,8 @@ method = "rrf"
 rrf_k = 60
 
 [graph]
-enabled = false            # wikilink neighbour boost (PR 4)
-boost = 0.1
+enabled = false            # wikilink neighbour boost; neutral on dev, so off by default
+boost = 0.05               # bonus × best min-max-normalised score of a linked note
 
 [rerank]
 enabled = false            # cross-encoder reranker (PR 5)
