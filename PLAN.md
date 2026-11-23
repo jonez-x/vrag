@@ -5,10 +5,10 @@ Status: `- [ ]` open · `- [x]` done · `- [!]` blocked: reason
 - [x] **1 · `feat/foundation`**
   - Scope: Sample vault, eval set (dev/holdout), engine API, BM25 baseline, `vrag search` / `vrag eval`, tests
   - Done when: Baseline score recorded in README
-- [ ] **2 · `loop/run-01`**
+- [x] **2 · `loop/run-01`** — #3
   - Scope: First loop run, BM25-only (chunking, stemming, params)
   - Done when: Run PR with score table
-- [ ] **3 · `feat/dense`**
+- [x] **3 · `feat/dense`** — #4
   - Scope: Ollama `bge-m3` embeddings, local vector store (sqlite-vec), RRF fusion
   - Done when: Hybrid beats BM25 on dev
 - [ ] **4 · `feat/graph`**
@@ -17,10 +17,10 @@ Status: `- [ ]` open · `- [x]` done · `- [!]` blocked: reason
 - [ ] **5 · `feat/rerank`**
   - Scope: Cross-encoder `bge-reranker-v2-m3` (optional extra)
   - Done when: Toggleable, measured
-- [ ] **6 · `feat/tui`**
+- [ ] **6 · `feat/tui`** — app merged in #5; demo GIF still missing (SVG screenshots only)
   - Scope: Textual app: Search (per-stage score breakdown), Vaults, Settings (edits `config.toml`), Eval (score history) · Obsidian theme + logo from `ui/logo.py`
   - Done when: Demo GIF in README
-- [ ] **7 · `feat/mcp`**
+- [x] **7 · `feat/mcp`** — #6
   - Scope: `vrag mcp` stdio server: `search_vault`, `read_note`, `related_notes`, `list_vaults` (read-only)
   - Done when: Works in Claude Code
 - [ ] **8 · `loop/run-02`**
