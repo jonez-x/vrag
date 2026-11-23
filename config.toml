@@ -24,6 +24,8 @@ batch_size = 32            # chunks per Ollama embed request
 [fusion]
 method = "rrf"
 rrf_k = 60
+bm25_weight = 1.0          # per-stage RRF weights (only used when several stages run)
+dense_weight = 1.2         # dense wins RRF ties and close calls against BM25
 
 [graph]
 enabled = false            # wikilink neighbour boost; neutral on dev, so off by default

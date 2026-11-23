@@ -37,6 +37,8 @@ class DenseConfig:
 class FusionConfig:
     method: str = "rrf"
     rrf_k: int = 60
+    bm25_weight: float = 1.0
+    dense_weight: float = 1.0
 
 
 @dataclass

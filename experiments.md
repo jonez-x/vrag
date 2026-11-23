@@ -85,3 +85,13 @@ A change that worsens (a) or (b) is reverted.
 - Result: (a) full 1.0 / 0.9688 → 1.0 / 0.9521 · (b) default 0.975 / 0.8958 → 0.975 / 0.8771 — **reverted**.
 - Learning: tail-only splits fire on far too many tokens and add noisy matches; d08 still misses
   (the token "ml" also matches millilitre amounts in recipes). Keep requiring both parts to be corpus terms.
+
+## Iteration 4 — weighted RRF (`fusion.dense_weight`)
+- Why: rrf_k (10–100) and graph boost (0.02–0.1) are flat on (a); the remaining non-rank-1 query d26 is an
+  exact RRF tie (BM25 #1 vs dense #1), broken by insertion order in favour of BM25. Dense alone is the
+  stronger stage on dev, so it should win ties and close calls.
+- Change: `rrf()` takes optional per-ranking weights; new `fusion.bm25_weight` / `fusion.dense_weight`
+  (default 1.0 = plain RRF). Try `dense_weight = 1.2` (only affects (a), (b) has a single stage).
+- Result: (a) full 1.0 / 0.9688 → 1.0 / 0.9812 · (b) default 0.975 / 0.8958 → unchanged — **kept**.
+- Learning: d26 moves to rank 1. Plateau: every dense_weight in 1.05–2.0 gives 0.9812, so 1.2 is not a
+  knife-edge value. Only d08 is left below rank 1 in (a) (rank 4).
