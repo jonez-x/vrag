@@ -43,6 +43,12 @@ def cmd_eval(args) -> int:
     return 0
 
 
+def cmd_mcp(args) -> int:
+    from .mcp_server import run
+
+    return run(args.mcp_vaults or [args.vault], Config.load(args.config))
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="vrag", description="Local-first retrieval for Obsidian vaults")
     p.add_argument("--config", default="config.toml")
@@ -59,6 +65,11 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--split", default="dev", choices=["dev", "holdout"])
     e.add_argument("--eval-dir", default="eval")
     e.set_defaults(func=cmd_eval)
+
+    m = sub.add_parser("mcp", help="read-only MCP server over stdio (for Claude Code & co.)")
+    m.add_argument("--vault", dest="mcp_vaults", action="append", metavar="[NAME=]PATH",
+                   help="vault to expose; repeat for several (default: top-level --vault)")
+    m.set_defaults(func=cmd_mcp)
 
     args = p.parse_args(argv)
     return args.func(args)
