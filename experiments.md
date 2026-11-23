@@ -23,3 +23,23 @@ Dev split only (`uv run vrag eval`). Objective: Recall@5 (tie-breaker MRR@10).
 - Change: new `bm25.stopwords` flag; a small built-in German stopword list removed at tokenisation.
 - Result: Recall@5 0.8375 → 0.85 · MRR@10 0.7424 → 0.80 — **kept**.
 - Learning: big MRR gain; remaining failures are morphology/compounds (Intervallen, Fahrradkette, Vorkochen).
+
+## Iteration 3 — light German stemming
+- Why: remaining failures are inflection mismatches: "langen Kontexten" vs "lange Kontexte",
+  "Günstiges" vs "Günstig", "reduziere" vs "reduzieren", "Intervallen" vs "Intervall".
+- Change: implement the existing `bm25.stemming` hook as a CISTEM-style suffix stripper
+  (umlaut folding, strip -em/-er/-nd and -e/-s/-n/-t), dependency-free; enable it in config.
+- Result: Recall@5 0.85 → 0.95 · MRR@10 0.80 → 0.8833 — **kept**.
+- Learning: inflection was the dominant failure mode; d09, d11, d17, d32 now pass. Remaining:
+  d08 ("ML-Klausur" — abbreviation vs "Machine Learning", compound "Altklausuren") and
+  d13 ("Fahrradkette" — compound vs heading "Kette"). Both need compound splitting or dense retrieval.
+
+## Stop
+Target Recall@5 ≥ 0.95 reached after 3 iterations → stopping early per LOOP.md.
+
+| Iteration | Change | Recall@5 | MRR@10 | Failed | Status |
+|---|---|---|---|---|---|
+| 0 | baseline (main) | 0.8375 | 0.7424 | 7 | — |
+| 1 | `prefix_title = true` | 0.8375 | 0.6986 | 7 | reverted |
+| 2 | German stopwords | 0.85 | 0.80 | 6 | kept |
+| 3 | German light stemming | 0.95 | 0.8833 | 2 | kept |

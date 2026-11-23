@@ -24,11 +24,28 @@ will wir wird wo wollen zu zum zur über
 """.split())
 
 
+_UMLAUTS = str.maketrans({"ä": "a", "ö": "o", "ü": "u", "ß": "ss"})
+
+
+def stem_german(token: str) -> str:
+    """Light, CISTEM-style suffix stripping: folds umlauts, removes inflection endings."""
+    t = token.translate(_UMLAUTS)
+    while len(t) > 3:
+        if len(t) > 5 and t[-2:] in ("em", "er", "nd"):
+            t = t[:-2]
+        elif t[-1] in "esnt" and not t[-2].isdigit():
+            t = t[:-1]
+        else:
+            break
+    return t
+
+
 def tokenize(text: str, stemming: bool = False, stopwords: bool = False) -> list[str]:
     tokens = TOKEN_RE.findall(text.lower())
     if stopwords:
         tokens = [t for t in tokens if t not in GERMAN_STOPWORDS]
-    # stemming: hook for the loop — intentionally not implemented in the baseline
+    if stemming:
+        tokens = [stem_german(t) for t in tokens]
     return tokens
 
 
