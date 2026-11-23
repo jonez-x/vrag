@@ -43,3 +43,21 @@ Target Recall@5 ≥ 0.95 reached after 3 iterations → stopping early per LOOP.
 | 1 | `prefix_title = true` | 0.8375 | 0.6986 | 7 | reverted |
 | 2 | German stopwords | 0.85 | 0.80 | 6 | kept |
 | 3 | German light stemming | 0.95 | 0.8833 | 2 | kept |
+
+---
+
+# Experiments — loop/run-02 (full pipeline)
+
+Dev split only. Two tracked scores per iteration (orchestrator decision, since R@5 ≥ 0.95 was already met):
+- **(a) full** — `uv run vrag --config .vrag/full.toml eval`: `config.toml` with dense (bge-m3) + graph (0.05) on,
+  rerank off. Target: MRR@10 at Recall@5 = 1.0.
+- **(b) default** — `uv run vrag eval` (BM25 + stemming + stopwords; what CI measures). Must never get worse.
+
+A change that worsens (a) or (b) is reverted.
+
+## Iteration 0 — baseline (main @ 713c34e)
+- (a) full: Recall@5 1.0 · MRR@10 0.9425 · 0 failed. Not at rank 1: d06, d26 (RRF tie with the
+  rank-1 note, lost on order), d13 (rank 2), d08 (rank 5).
+- (b) default: Recall@5 0.95 · MRR@10 0.8833 · failed d08, d13. Also not rank 1: d06, d11, d21, d26, d37.
+- Observations: in d08 and d13 the top BM25 hit (Kreuzvalidierung, 4.275) matches only the question
+  word "wann", which is missing from the stopword list. Ties in RRF are broken by insertion order.
