@@ -11,6 +11,7 @@ from .config import Config
 from .retrieve.bm25 import BM25Index
 from .retrieve.dense import DenseIndex, Embedder, EmbedderUnavailable
 from .retrieve.fusion import best_per_group, rrf
+from .retrieve.graph import LinkGraph, apply_boost
 from .vault import Note, load_vault
 
 
@@ -35,6 +36,8 @@ class Engine:
         self.chunks: list[Chunk] = []
         self._bm25: BM25Index | None = None
         self._dense: DenseIndex | None = None
+        self._graph: LinkGraph | None = None
+        self._first_chunk: dict[str, int] = {}  # note path → index of its first chunk
         self.warnings: list[str] = []
 
     def index(self, vault: str | Path) -> Engine:
@@ -44,6 +47,10 @@ class Engine:
         texts = [c.text for c in self.chunks]
         if self.config.bm25.enabled:
             self._bm25 = BM25Index(texts, self.config.bm25)
+        self._first_chunk = {}
+        for i, c in enumerate(self.chunks):
+            self._first_chunk.setdefault(c.note_path, i)
+        self._graph = LinkGraph(self.notes) if self.config.graph.enabled else None
         if self.config.dense.enabled:
             try:
                 self._dense = DenseIndex(texts, self.config.dense, self.embedder)
@@ -81,20 +88,30 @@ class Engine:
         per_stage = {name: best_per_group(s, paths) for name, s in stages.items()}
         if len(per_stage) == 1:
             ((name, ranking),) = per_stage.items()
-            top = [(p, stages[name][i]) for p, i in ranking[:k]]
+            scores = {p: stages[name][i] for p, i in ranking}
         else:  # fuse note rankings, so notes with many matching chunks get no extra weight
-            fused = rrf([[p for p, _ in r] for r in per_stage.values()], self.config.fusion.rrf_k)
-            top = sorted(fused.items(), key=lambda kv: kv[1], reverse=True)[:k]
+            scores = rrf([[p for p, _ in r] for r in per_stage.values()], self.config.fusion.rrf_k)
+        bonus: dict[str, float] = {}
+        if self._graph is not None:
+            bonus = {p: b for p, b in self._graph.boosts(scores, self.config.graph.boost).items()
+                     if p in self._first_chunk}  # notes without chunks can't be shown
+            final = apply_boost(scores, bonus)
+        else:
+            final = scores
+        top = sorted(final.items(), key=lambda kv: kv[1], reverse=True)[:k]
 
         best = {name: {p: (rank, i) for rank, (p, i) in enumerate(r)} for name, r in per_stage.items()}
         hits: list[Hit] = []
         for path, score in top:
             found = {name: best[name][path] for name in best if path in best[name]}
-            _, i = min(found.values())  # snippet from the stage that ranked this note highest
+            # snippet from the stage that ranked this note highest; graph-only hits use the first chunk
+            i = min(found.values())[1] if found else self._first_chunk[path]
             c = self.chunks[i]
             breakdown = {name: stages[name][j] for name, (_, j) in found.items()}
-            if len(per_stage) > 1:
-                breakdown["rrf"] = score
+            if len(per_stage) > 1 and path in scores:
+                breakdown["rrf"] = scores[path]
+            if self._graph is not None:
+                breakdown["graph"] = bonus.get(path, 0.0)
             hits.append(Hit(c.note_path, c.heading, _snippet(c.text), score, breakdown))
         return hits
 
