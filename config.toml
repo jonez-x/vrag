@@ -14,8 +14,10 @@ stemming = true            # German light (CISTEM-style) stemming
 stopwords = true           # drop German function words at tokenisation
 
 [dense]
-enabled = false            # needs Ollama — see PLAN.md (PR 3)
+enabled = false            # needs Ollama + `ollama pull bge-m3`; falls back to BM25 if missing
 model = "bge-m3"
+url = "http://localhost:11434"
+cache_dir = ".vrag"        # embedding cache (sqlite-vec), gitignored
 
 [fusion]
 method = "rrf"
