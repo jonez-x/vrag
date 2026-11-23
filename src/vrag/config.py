@@ -27,6 +27,9 @@ class BM25Config:
 class DenseConfig:
     enabled: bool = False
     model: str = "bge-m3"
+    url: str = "http://localhost:11434"
+    cache_dir: str = ".vrag"
+    batch_size: int = 32
 
 
 @dataclass

@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from .chunking import Chunk, chunk_note
 from .config import Config
 from .retrieve.bm25 import BM25Index
+from .retrieve.dense import DenseIndex, Embedder, EmbedderUnavailable
+from .retrieve.fusion import best_per_group, rrf
 from .vault import Note, load_vault
 
 
@@ -25,39 +28,74 @@ class Hit:
 
 
 class Engine:
-    def __init__(self, config: Config | None = None):
+    def __init__(self, config: Config | None = None, embedder: Embedder | None = None):
         self.config = config or Config()
+        self.embedder = embedder  # None → OllamaEmbedder from config.dense
         self.notes: dict[str, Note] = {}
         self.chunks: list[Chunk] = []
         self._bm25: BM25Index | None = None
+        self._dense: DenseIndex | None = None
+        self.warnings: list[str] = []
 
     def index(self, vault: str | Path) -> Engine:
         notes = load_vault(vault)
         self.notes = {n.path: n for n in notes}
         self.chunks = [c for n in notes for c in chunk_note(n, self.config.chunking)]
+        texts = [c.text for c in self.chunks]
         if self.config.bm25.enabled:
-            self._bm25 = BM25Index([c.text for c in self.chunks], self.config.bm25)
+            self._bm25 = BM25Index(texts, self.config.bm25)
+        if self.config.dense.enabled:
+            try:
+                self._dense = DenseIndex(texts, self.config.dense, self.embedder)
+            except EmbedderUnavailable as e:
+                self._dense_unavailable(e)
         return self
+
+    def _dense_unavailable(self, err: EmbedderUnavailable) -> None:
+        self._dense = None
+        fallback = "falling back to BM25" if self._bm25 else "no retrieval stage left"
+        msg = f"vrag: dense retrieval disabled — {err}; {fallback}"
+        self.warnings.append(msg)
+        print(msg, file=sys.stderr)
+
+    def _stage_scores(self, query: str) -> dict[str, list[float]]:
+        stages: dict[str, list[float]] = {}
+        if self._bm25 is not None:
+            stages["bm25"] = self._bm25.scores(query)
+        if self._dense is not None:
+            try:
+                stages["dense"] = self._dense.scores(query)
+            except EmbedderUnavailable as e:  # Ollama went away mid-session
+                self._dense_unavailable(e)
+        return stages
 
     def search(self, query: str, k: int | None = None) -> list[Hit]:
         k = k or self.config.search.k
-        if not self.chunks or self._bm25 is None:
+        if not self.chunks:
             return []
-        scores = self._bm25.scores(query)
-        ranked = sorted(range(len(self.chunks)), key=lambda i: scores[i], reverse=True)
+        stages = self._stage_scores(query)
+        if not stages:
+            return []
+        # note-level dedup per stage: a note is represented by its best chunk
+        paths = [c.note_path for c in self.chunks]
+        per_stage = {name: best_per_group(s, paths) for name, s in stages.items()}
+        if len(per_stage) == 1:
+            ((name, ranking),) = per_stage.items()
+            top = [(p, stages[name][i]) for p, i in ranking[:k]]
+        else:  # fuse note rankings, so notes with many matching chunks get no extra weight
+            fused = rrf([[p for p, _ in r] for r in per_stage.values()], self.config.fusion.rrf_k)
+            top = sorted(fused.items(), key=lambda kv: kv[1], reverse=True)[:k]
 
+        best = {name: {p: (rank, i) for rank, (p, i) in enumerate(r)} for name, r in per_stage.items()}
         hits: list[Hit] = []
-        seen: set[str] = set()
-        for i in ranked:
-            if scores[i] <= 0:
-                break
+        for path, score in top:
+            found = {name: best[name][path] for name in best if path in best[name]}
+            _, i = min(found.values())  # snippet from the stage that ranked this note highest
             c = self.chunks[i]
-            if c.note_path in seen:  # note-level dedup: best chunk wins
-                continue
-            seen.add(c.note_path)
-            hits.append(Hit(c.note_path, c.heading, _snippet(c.text), scores[i], {"bm25": scores[i]}))
-            if len(hits) >= k:
-                break
+            breakdown = {name: stages[name][j] for name, (_, j) in found.items()}
+            if len(per_stage) > 1:
+                breakdown["rrf"] = score
+            hits.append(Hit(c.note_path, c.heading, _snippet(c.text), score, breakdown))
         return hits
 
 
