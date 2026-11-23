@@ -24,7 +24,7 @@ uv run vrag eval
 
 | Version | Pipeline | Recall@5 (dev) | MRR@10 (dev) |
 |---|---|---|---|
-| baseline | BM25, heading chunks | _tbd_ | _tbd_ |
+| baseline | BM25, heading chunks | 0.838 | 0.742 |
 
 ## How the loop works
 ```
