@@ -75,3 +75,13 @@ A change that worsens (a) or (b) is reverted.
 - Result: (a) full 1.0 / 0.9563 → 1.0 / 0.9688 · (b) default 0.95 / 0.8833 → 0.975 / 0.8958 — **kept**.
 - Learning: first attempt split the *stemmed* token and failed — the stemmer over-strips ("kette" → "ket",
   "fahrradkette" → "fahrradk"), so splitting must run on the raw token and stem the parts. d13 now passes in default.
+
+## Iteration 3 — right-headed fallback split (tail only)
+- Why: d08 still misses in default: "Klausur" should match "Altklausuren", but "alt" is not a corpus
+  term, so the two-part split never fires. German compounds are right-headed (an *Alt*klausur is a
+  Klausur), so the tail alone is the meaningful part.
+- Change: in `split_compound`, if no two-part split exists, return the longest tail of ≥ 5 chars that
+  is a corpus term (head ≥ 3 chars). No new flag (same `decompound` stage).
+- Result: (a) full 1.0 / 0.9688 → 1.0 / 0.9521 · (b) default 0.975 / 0.8958 → 0.975 / 0.8771 — **reverted**.
+- Learning: tail-only splits fire on far too many tokens and add noisy matches; d08 still misses
+  (the token "ml" also matches millilitre amounts in recipes). Keep requiring both parts to be corpus terms.
