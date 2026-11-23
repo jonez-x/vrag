@@ -95,3 +95,13 @@ A change that worsens (a) or (b) is reverted.
 - Result: (a) full 1.0 / 0.9688 → 1.0 / 0.9812 · (b) default 0.975 / 0.8958 → unchanged — **kept**.
 - Learning: d26 moves to rank 1. Plateau: every dense_weight in 1.05–2.0 gives 0.9812, so 1.2 is not a
   knife-edge value. Only d08 is left below rank 1 in (a) (rank 4).
+
+## Iteration 5 — BM25 k1 1.5 → 1.2
+- Why: in (b) the remaining close calls (d09, d10, d21, d26, d37) are lost to notes that repeat a single
+  query term often (e.g. Laufschuhe). A lower k1 saturates term frequency sooner. Exploratory sweep on dev:
+  b 0.3–0.9 and max_chars 600–2000 are flat or worse; k1 0.9 and 1.2 both give the same gain, so pick the
+  standard Lucene default 1.2 (plateau, not a tuned point).
+- Change: `bm25.k1 = 1.2` in `config.toml` and the full config.
+- Result: (a) full 1.0 / 0.9812 → unchanged · (b) default 0.975 / 0.8958 → 0.975 / 0.9083 — **kept**.
+- Learning: the TUI settings test hard-coded the repo's k1 value; it now checks "unchanged after invalid input"
+  against the value it read, same intent. d08 is the only miss left in (b).

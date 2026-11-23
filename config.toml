@@ -8,7 +8,7 @@ prefix_title = false       # prepend "Note title > Heading" to each chunk
 
 [bm25]
 enabled = true
-k1 = 1.5
+k1 = 1.2
 b = 0.75
 stemming = true            # German light (CISTEM-style) stemming
 stopwords = true           # drop German function words at tokenisation
