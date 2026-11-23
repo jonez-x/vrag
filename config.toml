@@ -13,8 +13,10 @@ b = 0.75
 stemming = false           # German light stemming (not implemented yet)
 
 [dense]
-enabled = false            # needs Ollama — see PLAN.md (PR 3)
+enabled = false            # needs Ollama + `ollama pull bge-m3`; falls back to BM25 if missing
 model = "bge-m3"
+url = "http://localhost:11434"
+cache_dir = ".vrag"        # embedding cache (sqlite-vec), gitignored
 
 [fusion]
 method = "rrf"
