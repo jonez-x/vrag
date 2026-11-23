@@ -1,0 +1,33 @@
+# vrag retrieval pipeline config.
+# The TUI Settings screen and the self-improving loop both edit this file.
+
+[chunking]
+split_on_headings = true   # split notes at markdown headings
+max_chars = 1200           # hard cap per chunk
+prefix_title = false       # prepend "Note title > Heading" to each chunk
+
+[bm25]
+enabled = true
+k1 = 1.5
+b = 0.75
+stemming = false           # German light stemming (not implemented yet)
+
+[dense]
+enabled = false            # needs Ollama — see PLAN.md (PR 3)
+model = "bge-m3"
+
+[fusion]
+method = "rrf"
+rrf_k = 60
+
+[graph]
+enabled = false            # wikilink neighbour boost (PR 4)
+boost = 0.1
+
+[rerank]
+enabled = false            # cross-encoder reranker (PR 5)
+model = "BAAI/bge-reranker-v2-m3"
+top_n = 30
+
+[search]
+k = 5                      # results returned (note-level, deduplicated)

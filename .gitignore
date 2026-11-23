@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+dist/
+.vrag/
+eval/results/*.json
+!eval/results/.gitkeep
+.claude/settings.local.json
