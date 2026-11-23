@@ -25,7 +25,7 @@ First release, published on PyPI as `vrag-obsidian` (command and import package:
 - Second loop run: full stopword list, corpus-driven compound splitting, acronym terms, BM25 `k1 = 1.2`,
   weighted RRF (`dense_weight = 1.2`) (#9). Default: 1.0 / 0.9208 · full (dense + graph): 1.0 / 0.9875.
 - `vrag --version`, PyPI packaging, publish workflow via Trusted Publishing on `v*` tags, recall-over-iterations
-  chart in the README.
+  chart and demo GIF in the README.
 
 ### Fixed
 - Built-in config defaults now match `config.toml`. Without a `config.toml`, an installed vrag used to fall back

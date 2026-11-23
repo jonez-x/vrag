@@ -13,6 +13,8 @@
 
 One engine, three surfaces: TUI for humans, CLI with `--json` for scripts, MCP server for agents.
 
+![vrag TUI demo: live search, per-stage score breakdown, eval, settings and vaults tabs](https://raw.githubusercontent.com/jonez-x/vrag/main/docs/demo.gif)
+
 ## Install
 ```bash
 pip install vrag-obsidian        # or: uv tool install vrag-obsidian
@@ -85,7 +87,8 @@ The model is downloaded from Hugging Face on first use. Without the extra or the
 | Eval | `F4` | `Ctrl+R` scores the dev split on the sample vault (from a clone); history with deltas lives in `.vrag/eval_history.jsonl`. |
 
 `Ctrl+Q` quits. On macOS, F1–F4 may be media keys; use `fn` + F-key or turn on standard function keys.
-More screenshots: [Eval](docs/tui-eval.svg) · [Settings](docs/tui-settings.svg). Regenerate with `uv run python scripts/screenshots.py`.
+More screenshots: [Eval](docs/tui-eval.svg) · [Settings](docs/tui-settings.svg). Regenerate with `uv run python scripts/screenshots.py`;
+the demo GIF with `uv run --with pillow python scripts/demo_gif.py` (headless, no screen recorder needed).
 
 ## Use it from Claude Code (MCP)
 `vrag mcp` is a read-only [MCP](https://modelcontextprotocol.io) server over stdio. Register it once:
