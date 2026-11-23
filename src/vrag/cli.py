@@ -8,6 +8,7 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
+from . import __version__
 from .config import Config
 from .engine import Engine
 from .evaluate import run_eval
@@ -61,6 +62,7 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="vrag", description="Local-first retrieval for Obsidian vaults")
     p.add_argument("--config", default="config.toml")
     p.add_argument("--vault", default=DEFAULT_VAULT)
+    p.add_argument("--version", action="version", version=f"vrag {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     s = sub.add_parser("search", help="search a vault")

@@ -1736,8 +1736,7 @@ wheels = [
 ]
 
 [[package]]
-name = "vrag"
-version = "0.1.0"
+name = "vrag-obsidian"
 source = { editable = "." }
 dependencies = [
     { name = "pyyaml" },
