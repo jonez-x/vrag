@@ -1,0 +1,20 @@
+{"id": "h01", "query": "Was hilft gegen ein zu komplexes Modell, das schlecht generalisiert?", "relevant": ["Uni/ML/Overfitting.md", "Uni/ML/Regularisierung.md"]}
+{"id": "h02", "query": "Wie funktionieren mehrere Attention-Köpfe?", "relevant": ["Uni/ML/Self-Attention.md"]}
+{"id": "h03", "query": "Wie viele Folds nimmt man bei Cross-Validation?", "relevant": ["Uni/ML/Kreuzvalidierung.md"]}
+{"id": "h04", "query": "Wozu dient der Parameter b im Ranking?", "relevant": ["Uni/ML/BM25.md"]}
+{"id": "h05", "query": "Welche Formel nutzt man, um mehrere Rankings zu verschmelzen?", "relevant": ["Uni/ML/Reciprocal Rank Fusion.md"]}
+{"id": "h06", "query": "Was steht dienstags im Trainingsplan?", "relevant": ["Sport/Halbmarathon Plan.md"]}
+{"id": "h07", "query": "Wie lerne ich am besten für Klausuren?", "relevant": ["Uni/Prüfungsplan Wintersemester.md", "Wissen/Pomodoro-Technik.md"]}
+{"id": "h08", "query": "Wie bewahre ich das Anstellgut auf?", "relevant": ["Kochen/Sauerteig ansetzen.md"]}
+{"id": "h09", "query": "Welches Verhältnis von Kaffee zu Wasser beim Handfilter?", "relevant": ["Kochen/Kaffee V60.md"]}
+{"id": "h10", "query": "Frühstück mit Feta und Paprika aus der Pfanne", "relevant": ["Kochen/Shakshuka.md"]}
+{"id": "h11", "query": "Was bedeutet Habit Stacking?", "relevant": ["Bücher/Gewohnheiten aufbauen.md"]}
+{"id": "h12", "query": "Warum sollte jede Notiz nur eine Idee enthalten?", "relevant": ["Wissen/Zettelkasten.md"]}
+{"id": "h13", "query": "Wie räume ich ungenutzte Container-Images auf?", "relevant": ["Tech/Docker Grundlagen.md"]}
+{"id": "h14", "query": "Darf ich bereits gepushte Commits umschreiben?", "relevant": ["Tech/Git Rebase vs Merge.md"]}
+{"id": "h15", "query": "Wie oft sollte ich die Wiederherstellung testen?", "relevant": ["Tech/Backup-Strategie.md"]}
+{"id": "h16", "query": "Darf der Vermieter die Solaranlage verbieten?", "relevant": ["Projekte/Balkonkraftwerk.md"]}
+{"id": "h17", "query": "Was muss ich bei der Wohnungsübergabe beachten?", "relevant": ["Projekte/Umzug Freiburg.md"]}
+{"id": "h18", "query": "Bis wann muss ich die Steuer ohne Berater abgeben?", "relevant": ["Projekte/Steuererklärung.md"]}
+{"id": "h19", "query": "Wo gibt es die besten Puddingtörtchen in Portugal?", "relevant": ["Reisen/Lissabon.md"]}
+{"id": "h20", "query": "Wann sollte man Berghütten reservieren?", "relevant": ["Reisen/Dolomiten Hüttentour.md"]}

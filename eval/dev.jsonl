@@ -1,0 +1,40 @@
+{"id": "d01", "query": "Wie verhindere ich, dass mein neuronales Netz die Trainingsdaten auswendig lernt?", "relevant": ["Uni/ML/Overfitting.md", "Uni/ML/Regularisierung.md"]}
+{"id": "d02", "query": "Warum teilt man das Produkt aus Query und Key durch die Wurzel der Dimension?", "relevant": ["Uni/ML/Self-Attention.md"]}
+{"id": "d03", "query": "Was passiert, wenn die Lernrate zu hoch gewählt ist?", "relevant": ["Uni/ML/Gradientenabstieg.md"]}
+{"id": "d04", "query": "Unterschied zwischen L1- und L2-Strafterm", "relevant": ["Uni/ML/Regularisierung.md"]}
+{"id": "d05", "query": "Wie teile ich Zeitreihendaten fürs Validieren richtig auf?", "relevant": ["Uni/ML/Kreuzvalidierung.md"]}
+{"id": "d06", "query": "Wie kombiniere ich Keyword-Suche und Vektorsuche?", "relevant": ["Uni/ML/Reciprocal Rank Fusion.md"]}
+{"id": "d07", "query": "Warum findet die klassische Volltextsuche keine Synonyme?", "relevant": ["Uni/ML/BM25.md"]}
+{"id": "d08", "query": "Wann ist die ML-Klausur?", "relevant": ["Uni/Prüfungsplan Wintersemester.md"]}
+{"id": "d09", "query": "Welches Tempo laufe ich bei 1000er-Intervallen?", "relevant": ["Sport/Intervalltraining.md"]}
+{"id": "d10", "query": "In welchem Pulsbereich sollten lockere Läufe sein?", "relevant": ["Sport/Grundlagenausdauer.md"]}
+{"id": "d11", "query": "Wie reduziere ich das Training vor dem Wettkampf?", "relevant": ["Sport/Halbmarathon Plan.md"]}
+{"id": "d12", "query": "Nach wie vielen Kilometern brauche ich neue Laufschuhe?", "relevant": ["Sport/Laufschuhe.md"]}
+{"id": "d13", "query": "Wann muss die Fahrradkette getauscht werden?", "relevant": ["Sport/Fahrrad Wartung.md"]}
+{"id": "d14", "query": "Wie viel bar gehören auf den Rennradreifen?", "relevant": ["Sport/Fahrrad Wartung.md"]}
+{"id": "d15", "query": "Rezept mit Eiern in Tomatensoße", "relevant": ["Kochen/Shakshuka.md"]}
+{"id": "d16", "query": "Mein Sauerteig hat oben eine graue Flüssigkeit, was bedeutet das?", "relevant": ["Kochen/Sauerteig ansetzen.md"]}
+{"id": "d17", "query": "Günstiges vegetarisches Gericht zum Vorkochen für die Woche", "relevant": ["Kochen/Linsen-Dal.md"]}
+{"id": "d18", "query": "Mein Filterkaffee schmeckt sauer, was tun?", "relevant": ["Kochen/Kaffee V60.md"]}
+{"id": "d19", "query": "Was sind System 1 und System 2?", "relevant": ["Bücher/Schnelles Denken, langsames Denken.md"]}
+{"id": "d20", "query": "Wie fange ich eine neue Gewohnheit möglichst klein an?", "relevant": ["Bücher/Gewohnheiten aufbauen.md"]}
+{"id": "d21", "query": "Wie lange dauert eine Pomodoro-Einheit?", "relevant": ["Wissen/Pomodoro-Technik.md"]}
+{"id": "d22", "query": "Wie hat Luhmann seine Notizen organisiert?", "relevant": ["Wissen/Zettelkasten.md"]}
+{"id": "d23", "query": "Fehlermeldung port is already allocated", "relevant": ["Tech/Docker Grundlagen.md"]}
+{"id": "d24", "query": "Wie fasse ich die letzten Commits zu einem zusammen?", "relevant": ["Tech/Git Rebase vs Merge.md"]}
+{"id": "d25", "query": "Welche Dienste laufen auf dem Raspberry Pi?", "relevant": ["Tech/Homelab.md"]}
+{"id": "d26", "query": "Wie viele Kopien sollte eine Datensicherung haben?", "relevant": ["Tech/Backup-Strategie.md"]}
+{"id": "d27", "query": "Muss ich die Solaranlage am Balkon beim Netzbetreiber melden?", "relevant": ["Projekte/Balkonkraftwerk.md"]}
+{"id": "d28", "query": "Bis wann muss ich mich nach dem Umzug ummelden?", "relevant": ["Projekte/Umzug Freiburg.md"]}
+{"id": "d29", "query": "Kann ich Kosten fürs Masterstudium von der Steuer absetzen?", "relevant": ["Projekte/Steuererklärung.md"]}
+{"id": "d30", "query": "Wie komme ich von Lissabon nach Sintra?", "relevant": ["Reisen/Lissabon.md"]}
+{"id": "d31", "query": "Was muss auf der Hüttentour unbedingt in den Rucksack?", "relevant": ["Reisen/Dolomiten Hüttentour.md"]}
+{"id": "d32", "query": "Warum ist die Rechenzeit bei langen Kontexten so hoch?", "relevant": ["Uni/ML/Self-Attention.md"]}
+{"id": "d33", "query": "Welche Architektur steckt hinter GPT und BERT?", "relevant": ["Uni/ML/Transformer.md"]}
+{"id": "d34", "query": "Was ist der Adam-Optimierer?", "relevant": ["Uni/ML/Gradientenabstieg.md"]}
+{"id": "d35", "query": "Warum sollte ich für den Heimserver keine SD-Karte nehmen?", "relevant": ["Tech/Homelab.md"]}
+{"id": "d36", "query": "Wann rechnet sich das Balkonkraftwerk finanziell?", "relevant": ["Projekte/Balkonkraftwerk.md"]}
+{"id": "d37", "query": "Wie oft pro Woche sollte ich harte Einheiten laufen?", "relevant": ["Sport/Intervalltraining.md"]}
+{"id": "d38", "query": "Verluste fühlen sich schlimmer an als Gewinne", "relevant": ["Bücher/Schnelles Denken, langsames Denken.md"]}
+{"id": "d39", "query": "Wie finde ich Texte, die dasselbe bedeuten, aber andere Wörter benutzen?", "relevant": ["Uni/ML/Embeddings.md"]}
+{"id": "d40", "query": "Was tun, wenn ein Rebase schiefgegangen ist?", "relevant": ["Tech/Git Rebase vs Merge.md"]}
