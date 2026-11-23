@@ -65,8 +65,15 @@ def test_tokenize_drops_german_stopwords():
         "wann", "muss", "die", "kette", "getauscht", "werden"
     ]
     assert tokenize("Wann muss die Kette getauscht werden?", stopwords=True) == [
-        "wann", "kette", "getauscht"
+        "kette", "getauscht"
     ]
+
+
+def test_stopwords_cover_question_words_and_modals():
+    from vrag.retrieve.bm25 import tokenize
+
+    for q in ("wann", "wieso", "weshalb", "woher", "wohin", "wozu", "darf", "sollen", "könnte"):
+        assert tokenize(f"{q} Fahrrad", stopwords=True) == ["fahrrad"], q
 
 
 def test_stem_german_conflates_inflections():

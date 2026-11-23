@@ -21,6 +21,8 @@ meinem meinen meiner mich mir mit muss müssen nach nicht nichts noch nun nur ob
 sein seine sich sie sind so solche soll sollte sondern sonst um und uns unser unter vom von vor
 war waren warum was weil welche welchem welchen welcher welches wenn wer werde werden wie wieder
 will wir wird wo wollen zu zum zur über
+wann wieso weshalb weswegen woher wohin womit wozu wofür worauf woran wodurch
+darf dürfen kannst könnte könnten musst müsste möchte sollen sollst solltest sollten wollte
 """.split())
 
 
