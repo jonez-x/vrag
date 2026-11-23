@@ -11,6 +11,9 @@ dependencies = [
     "textual>=0.80",
 ]
 
+[project.optional-dependencies]
+rerank = ["sentence-transformers>=3.0"]  # cross-encoder reranker; pulls in torch
+
 [project.scripts]
 vrag = "vrag.cli:main"
 
