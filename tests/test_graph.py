@@ -4,7 +4,7 @@ import pytest
 
 from vrag.config import Config, GraphConfig
 from vrag.engine import Engine
-from vrag.retrieve.graph import LinkGraph, apply_boost
+from vrag.retrieve.graph import LinkGraph, apply_boost, normalise
 from vrag.vault import parse_note
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,12 +19,21 @@ def test_link_graph_is_undirected_and_resolves_titles():
     assert g.neighbours == {"A.md": {"B.md", "C.md"}, "B.md": {"A.md"}, "C.md": {"A.md"}}
 
 
+def test_normalise_is_min_max_with_positive_floor():
+    assert normalise({"A": 10.0, "B": 5.0}) == pytest.approx({"A": 1.0, "B": 1 / 3})
+    assert normalise({"A": 0.5, "B": 0.5}) == {"A": 1.0, "B": 1.0}
+    assert normalise({}) == {}
+    # compressed RRF-like scores still spread out
+    rrf_like = normalise({"A": 1 / 61, "B": 1 / 62, "C": 1 / 63})
+    assert rrf_like["A"] == 1.0 and rrf_like["C"] == pytest.approx(0.25)
+
+
 def test_boosts_use_best_normalised_neighbour():
     g = LinkGraph(_notes(A="[[B]] [[C]]", B="", C="", D=""))
     bonus = g.boosts({"A.md": 10.0, "B.md": 5.0}, boost=0.2)
     assert bonus["B.md"] == pytest.approx(0.2)  # neighbour A is the top hit
     assert bonus["C.md"] == pytest.approx(0.2)  # not retrieved, pulled in via A
-    assert bonus["A.md"] == pytest.approx(0.1)  # best neighbour B has half the top score
+    assert bonus["A.md"] == pytest.approx(0.2 / 3)  # best neighbour B is the weakest hit
     assert "D.md" not in bonus
     assert g.boosts({"A.md": 1.0}, boost=0.0) == {}
     assert g.boosts({}, boost=0.2) == {}
@@ -32,7 +41,7 @@ def test_boosts_use_best_normalised_neighbour():
 
 def test_apply_boost_normalises_and_adds():
     out = apply_boost({"A.md": 4.0, "B.md": 2.0}, {"B.md": 0.6, "C.md": 0.1})
-    assert out == pytest.approx({"A.md": 1.0, "B.md": 1.1, "C.md": 0.1})
+    assert out == pytest.approx({"A.md": 1.0, "B.md": 1 / 3 + 0.6, "C.md": 0.1})
 
 
 def _write(tmp_path, **bodies):
@@ -60,7 +69,8 @@ def test_engine_graph_pulls_in_linked_note(tmp_path):
 
 def test_engine_graph_reorders_close_hits(tmp_path):
     # B and C match equally; only C links to the top hit A, so it wins the tie
-    vault = _write(tmp_path, A="Kaffee Kaffee Kaffee", B="Kaffee Tee", C="Kaffee Tee [[A]]", D="Wasser")
+    vault = _write(tmp_path, A="Kaffee Kaffee Kaffee", B="Kaffee Tee [[D]]", C="Kaffee Tee [[A]]",
+                   D="Wasser", E="Kaffee Wasser Wasser Wasser Wasser Wasser")
     off = Engine().index(vault).search("Kaffee")
     on = Engine(Config(graph=GraphConfig(enabled=True, boost=0.2))).index(vault).search("Kaffee")
     assert on[0].note_path == "A.md"
