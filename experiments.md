@@ -116,3 +116,18 @@ A change that worsens (a) or (b) is reverted.
 - Result: (a) full 1.0 / 0.9812 → 1.0 / 0.9875 · (b) default 0.975 / 0.9083 → 1.0 / 0.9208 — **kept**.
 - Learning: d08 now retrieved in both. Risk to watch: in German every noun is capitalised, so noun–noun
   runs produce spurious initials; harmless here because queries rarely contain 2–3 letter tokens.
+
+## Stop
+Both scores are at Recall@5 = 1.0 after 6 iterations (budget 10). The remaining rank-2 cases are genuine
+lexical overlap (e.g. Laufschuhe mentions "lange Läufe", "Wettkämpfe", "harte Einheiten") and in (a) only
+d08 sits at rank 2 by an RRF margin of 0.0003; chasing them further would fit the 40 dev queries, not the vault.
+
+| Iteration | Change | (a) full R@5 / MRR@10 | (b) default R@5 / MRR@10 | Status |
+|---|---|---|---|---|
+| 0 | baseline (main) | 1.0 / 0.9425 | 0.95 / 0.8833 | — |
+| 1 | complete German stopword list | 1.0 / 0.9563 | 0.95 / 0.8833 | kept |
+| 2 | corpus-driven compound splitting | 1.0 / 0.9688 | 0.975 / 0.8958 | kept |
+| 3 | right-headed tail-only split | 1.0 / 0.9521 | 0.975 / 0.8771 | reverted |
+| 4 | weighted RRF, dense_weight 1.2 | 1.0 / 0.9812 | 0.975 / 0.8958 | kept |
+| 5 | BM25 k1 1.5 → 1.2 | 1.0 / 0.9812 | 0.975 / 0.9083 | kept |
+| 6 | acronym terms from capitalised runs | 1.0 / 0.9875 | 1.0 / 0.9208 | kept |
