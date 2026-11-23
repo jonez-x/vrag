@@ -56,3 +56,26 @@ def test_engine_search_on_sample_vault():
     assert hits and hits[0].note_path == "Kochen/Sauerteig ansetzen.md"
     assert len({h.note_path for h in hits}) == len(hits)  # deduplicated
     assert "bm25" in hits[0].stage_scores
+
+
+def test_tokenize_drops_german_stopwords():
+    from vrag.retrieve.bm25 import tokenize
+
+    assert tokenize("Wann muss die Kette getauscht werden?") == [
+        "wann", "muss", "die", "kette", "getauscht", "werden"
+    ]
+    assert tokenize("Wann muss die Kette getauscht werden?", stopwords=True) == [
+        "wann", "kette", "getauscht"
+    ]
+
+
+def test_stem_german_conflates_inflections():
+    from vrag.retrieve.bm25 import stem_german, tokenize
+
+    assert stem_german("langen") == stem_german("lange")
+    assert stem_german("kontexten") == stem_german("kontexte")
+    assert stem_german("günstiges") == stem_german("günstig")
+    assert stem_german("intervallen") == "intervall"
+    assert stem_german("1000er") == stem_german("1000") == "1000"  # "1000er" matches "1000 m"
+    toks = tokenize("Die langen Kontexte", stemming=True, stopwords=True)
+    assert toks == tokenize("lange Kontexten", stemming=True) and len(toks) == 2

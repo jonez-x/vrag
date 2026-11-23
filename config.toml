@@ -10,7 +10,8 @@ prefix_title = false       # prepend "Note title > Heading" to each chunk
 enabled = true
 k1 = 1.5
 b = 0.75
-stemming = false           # German light stemming (not implemented yet)
+stemming = true            # German light (CISTEM-style) stemming
+stopwords = true           # drop German function words at tokenisation
 
 [dense]
 enabled = false            # needs Ollama — see PLAN.md (PR 3)
