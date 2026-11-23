@@ -18,7 +18,29 @@
 uv sync
 uv run vrag search "wie verhindere ich overfitting" --vault vaults/sample
 uv run vrag eval
+uv run vrag tui
 ```
+
+### Dense retrieval (optional)
+Dense search embeds chunks with [Ollama](https://ollama.com) and fuses them with BM25 via note-level RRF.
+```bash
+ollama pull bge-m3
+# config.toml → [dense] enabled = true
+```
+Embeddings are cached in `.vrag/embeddings.sqlite` (sqlite-vec), so only new or changed chunks get embedded on re-index. If Ollama or the model is missing, vrag prints a warning and falls back to BM25.
+
+## Terminal UI
+
+![vrag TUI — search with per-stage score breakdown](docs/tui-search.svg)
+
+| Tab | Key | What it does |
+|---|---|---|
+| Search | `F1` | Live search as you type; results table plus a per-stage score breakdown (BM25, and later dense / graph / rerank) for the highlighted hit. `Esc` jumps back to the search box. |
+| Vaults | `F2` | Add a vault by path, `Enter` on a row opens it, *Remove* drops it. Remembered in `.vrag/vaults.json`. |
+| Settings | `F3` | Every `config.toml` option as a form; `Ctrl+S` saves and re-indexes. Only the changed values are rewritten, comments and layout stay. |
+| Eval | `F4` | `Ctrl+R` scores the dev split on the sample vault; history with deltas lives in `.vrag/eval_history.jsonl` (gitignored). |
+
+`Ctrl+Q` quits. More screenshots: [Eval](docs/tui-eval.svg) · [Settings](docs/tui-settings.svg) — regenerate with `uv run python scripts/screenshots.py`.
 
 ## Use it from Claude Code (MCP)
 `vrag mcp` is a read-only [MCP](https://modelcontextprotocol.io) server over stdio. Register it once:
@@ -44,6 +66,8 @@ outside the vault and `.obsidian/` are all refused.
 | Version | Pipeline | Recall@5 (dev) | MRR@10 (dev) |
 |---|---|---|---|
 | baseline | BM25, heading chunks | 0.838 | 0.742 |
+| `feat/dense` | dense only (`bge-m3`) | 1.000 | 0.967 |
+| `feat/dense` | hybrid BM25 + dense, note-level RRF (k=60) | 0.925 | 0.852 |
 
 ## How the loop works
 ```

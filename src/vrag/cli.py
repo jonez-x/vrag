@@ -43,6 +43,14 @@ def cmd_eval(args) -> int:
     return 0
 
 
+def cmd_tui(args) -> int:
+    from .ui.app import run  # Textual is only imported when the TUI is used
+
+    # only an explicit --vault overrides the vault remembered in .vrag/
+    run(config_path=args.config, vault=None if args.vault == DEFAULT_VAULT else args.vault)
+    return 0
+
+
 def cmd_mcp(args) -> int:
     from .mcp_server import run
 
@@ -65,6 +73,9 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--split", default="dev", choices=["dev", "holdout"])
     e.add_argument("--eval-dir", default="eval")
     e.set_defaults(func=cmd_eval)
+
+    t = sub.add_parser("tui", help="open the terminal UI")
+    t.set_defaults(func=cmd_tui)
 
     m = sub.add_parser("mcp", help="read-only MCP server over stdio (for Claude Code & co.)")
     m.add_argument("--vault", dest="mcp_vaults", action="append", metavar="[NAME=]PATH",

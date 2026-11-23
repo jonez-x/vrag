@@ -20,12 +20,16 @@ class BM25Config:
     k1: float = 1.5
     b: float = 0.75
     stemming: bool = False
+    stopwords: bool = False
 
 
 @dataclass
 class DenseConfig:
     enabled: bool = False
     model: str = "bge-m3"
+    url: str = "http://localhost:11434"
+    cache_dir: str = ".vrag"
+    batch_size: int = 32
 
 
 @dataclass
