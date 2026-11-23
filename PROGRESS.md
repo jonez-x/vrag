@@ -48,3 +48,21 @@ Template:
 - **Eval (dev):** unchanged (no retrieval change)
 - **Learnings:** verified in Claude Code via `claude -p --mcp-config`: all three tools called, sensible top hits.
 - **Open problems:** no Resources/Prompts/cancellation. Without an absolute `--config`, a different working directory silently uses defaults.
+
+## 2026-11-23 — PR 7 `feat/graph`
+- **Result:** merged (#7) — `retrieve/graph.py`, one-hop wikilink neighbour boost with min-max normalisation, per-stage `graph` score; off by default, `boost = 0.05`
+- **Eval (dev):** default 0.95 / 0.8833 → unchanged · hybrid 1.0 / 0.9425 → 1.0 / 0.9425 (boost 0.05); boost ≥ 0.1 hurts hybrid MRR, boost 0.3 helps BM25 MRR (0.8958)
+- **Learnings:** max-only normalisation hurt hybrid (MRR 0.8919); min-max fixed it. Dev has few queries where a linked note is the answer, so the effect is barely measurable.
+- **Open problems:** no damping for highly linked hubs; one hop only.
+
+## 2026-11-23 — PR 8 `feat/rerank`
+- **Result:** merged (#8) — optional `rerank` extra (cross-encoder `bge-reranker-v2-m3`), `retrieve/rerank.py`, falls back when the extra is missing; off by default
+- **Eval (dev, worker-measured locally):** BM25 0.95 / 0.8833 → 0.95 / 0.9125 (~270 ms/query) · hybrid 1.0 / 0.9425 → 1.0 / 0.95 (0.6–1.5 s/query)
+- **Learnings:** top_n 10/20/30 score the same on dev; top_n 10 halves latency.
+- **Open problems:** too slow for live TUI search; ~2 GB model download; `uv.lock` now pins the extra's packages (CI doesn't install them).
+
+## 2026-11-23 — PR 9 `loop/run-02`
+- **Result:** merged (#9) — 6 iterations (5 kept, 1 reverted): full stopword list, corpus-driven compound splitting, weighted RRF (`dense_weight = 1.2`), BM25 `k1 = 1.2`, acronym terms from capitalised word runs
+- **Eval (dev):** default 0.95 / 0.8833 → **1.0 / 0.9208** (0 misses) · full (dense + graph) 1.0 / 0.9425 → **1.0 / 0.9875** — orchestrator reproduced both
+- **Learnings:** compound splitting fixed "Fahrradkette"; acronyms fixed "ML-Klausur". Splitting before stemming sidesteps the over-truncating stemmer.
+- **Open problems:** done criterion (held-out R@5 ≥ 0.95) not checked — human must run it for default and full config. Acronym heuristic and `k1` / `dense_weight` were tuned on 40 dev queries → overfitting risk; acronyms may add noisy terms on other vaults.
