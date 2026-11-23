@@ -12,6 +12,7 @@ k1 = 1.5
 b = 0.75
 stemming = true            # German light (CISTEM-style) stemming
 stopwords = true           # drop German function words at tokenisation
+decompound = true          # split compounds into corpus terms ("Fahrradkette" → fahrrad + kett)
 
 [dense]
 enabled = false            # needs Ollama + `ollama pull bge-m3`; falls back to BM25 if missing

@@ -61,3 +61,17 @@ A change that worsens (a) or (b) is reverted.
 - (b) default: Recall@5 0.95 · MRR@10 0.8833 · failed d08, d13. Also not rank 1: d06, d11, d21, d26, d37.
 - Observations: in d08 and d13 the top BM25 hit (Kreuzvalidierung, 4.275) matches only the question
   word "wann", which is missing from the stopword list. Ties in RRF are broken by insertion order.
+- Result: (a) full 1.0 / 0.9425 → 1.0 / 0.9563 · (b) default 0.95 / 0.8833 → 0.95 / 0.8833 — **kept**.
+- Learning: d13 moves to rank 1 in full (spurious "wann" match gone); in default d08/d13 still miss because
+  the BM25 vocabulary never matches the compounds ("Fahrradkette" vs "Fahrrad"/"Kette", "Klausur" vs "Altklausuren").
+
+## Iteration 2 — corpus-driven compound splitting (`bm25.decompound`)
+- Why: German compounds are the remaining BM25 vocabulary gap: query "Fahrradkette" vs note words
+  "Fahrrad" + "Kette"; query "Klausur" vs note word "Altklausuren". Splitting a long token into two
+  parts that both occur in the corpus vocabulary bridges this without a dictionary dependency.
+- Change: new `bm25.decompound` flag. After stemming, a token of ≥ 7 chars gets its parts added
+  (first split where both stemmed parts are corpus terms, head ≥ 3, tail ≥ 4 chars); applied to
+  chunks and queries alike, original token kept. On in `config.toml`.
+- Result: (a) full 1.0 / 0.9563 → 1.0 / 0.9688 · (b) default 0.95 / 0.8833 → 0.975 / 0.8958 — **kept**.
+- Learning: first attempt split the *stemmed* token and failed — the stemmer over-strips ("kette" → "ket",
+  "fahrradkette" → "fahrradk"), so splitting must run on the raw token and stem the parts. d13 now passes in default.

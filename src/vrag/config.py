@@ -21,6 +21,7 @@ class BM25Config:
     b: float = 0.75
     stemming: bool = False
     stopwords: bool = False
+    decompound: bool = False
 
 
 @dataclass

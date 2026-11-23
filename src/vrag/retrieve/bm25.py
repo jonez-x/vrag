@@ -51,10 +51,30 @@ def tokenize(text: str, stemming: bool = False, stopwords: bool = False) -> list
     return tokens
 
 
+def split_compound(token: str, vocab: set[str], stem: bool = False) -> list[str]:
+    """Two-part split of an unstemmed token into corpus terms ("fahrradkette" → fahrrad, kette), else [].
+
+    With `stem`, parts are stemmed before the lookup (so `vocab` holds stemmed terms) and linking
+    elements like "-en-" / "-s-" disappear with the head's suffix.
+    """
+    if len(token) < 7:
+        return []
+    for i in range(len(token) - 4, 2, -1):  # longest head first
+        head, tail = token[:i], token[i:]
+        if stem:
+            head, tail = stem_german(head), stem_german(tail)
+        if head in vocab and tail in vocab:
+            return [head, tail]
+    return []
+
+
 class BM25Index:
     def __init__(self, docs: list[str], cfg: BM25Config):
         self.cfg = cfg
-        self.tfs = [Counter(self._tokenize(d)) for d in docs]
+        raw = [tokenize(d, stopwords=cfg.stopwords) for d in docs]
+        stem = stem_german if cfg.stemming else (lambda t: t)
+        self.vocab = {stem(t) for ts in raw for t in ts} if cfg.decompound else set()
+        self.tfs = [Counter(self._terms(ts)) for ts in raw]
         self.lens = [sum(tf.values()) for tf in self.tfs]
         self.avgdl = (sum(self.lens) / len(self.lens)) if self.lens else 0.0
         df: Counter = Counter()
@@ -63,12 +83,18 @@ class BM25Index:
         n = len(docs)
         self.idf = {t: math.log(1 + (n - f + 0.5) / (f + 0.5)) for t, f in df.items()}
 
-    def _tokenize(self, text: str) -> list[str]:
-        return tokenize(text, self.cfg.stemming, self.cfg.stopwords)
+    def _terms(self, raw: list[str]) -> list[str]:
+        """Index terms for unstemmed tokens: stemmed if enabled, plus compound parts if `decompound`."""
+        out = []
+        for t in raw:
+            out.append(stem_german(t) if self.cfg.stemming else t)
+            if self.cfg.decompound:
+                out.extend(split_compound(t, self.vocab, self.cfg.stemming))
+        return out
 
     def scores(self, query: str) -> list[float]:
         k1, b = self.cfg.k1, self.cfg.b
-        q = self._tokenize(query)
+        q = self._terms(tokenize(query, stopwords=self.cfg.stopwords))
         out = []
         for tf, dl in zip(self.tfs, self.lens):
             s = 0.0

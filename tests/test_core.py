@@ -76,6 +76,28 @@ def test_stopwords_cover_question_words_and_modals():
         assert tokenize(f"{q} Fahrrad", stopwords=True) == ["fahrrad"], q
 
 
+def test_split_compound_uses_corpus_vocabulary():
+    from vrag.retrieve.bm25 import split_compound, stem_german
+
+    assert split_compound("fahrradkette", {"fahrrad", "kette"}) == ["fahrrad", "kette"]
+    vocab = {stem_german(t) for t in ("fahrrad", "kette", "alte", "klausur", "ketten", "verschleiß")}
+    assert split_compound("altklausuren", vocab, stem=True) == ["alt", "klausur"]
+    assert split_compound("kettenverschleiß", vocab, stem=True) == [stem_german("ketten"), stem_german("verschleiß")]
+    assert split_compound("fahrrad", vocab, stem=True) == []  # short / not a compound of known terms
+    assert split_compound("wanderschuhe", vocab, stem=True) == []
+
+
+def test_decompound_matches_compound_query_to_parts():
+    from vrag.config import BM25Config
+    from vrag.retrieve.bm25 import BM25Index
+
+    docs = ["Die Kette am Fahrrad ölen", "Brot backen mit Sauerteig"]
+    on = BM25Index(docs, BM25Config(stemming=True, stopwords=True, decompound=True))
+    off = BM25Index(docs, BM25Config(stemming=True, stopwords=True))
+    assert on.scores("Fahrradkette")[0] > 0 and on.scores("Fahrradkette")[1] == 0
+    assert off.scores("Fahrradkette") == [0.0, 0.0]
+
+
 def test_stem_german_conflates_inflections():
     from vrag.retrieve.bm25 import stem_german, tokenize
 
