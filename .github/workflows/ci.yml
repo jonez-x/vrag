@@ -1,0 +1,78 @@
+name: ci
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-eval:
+    runs-on: ubuntu-latest
+    env:
+      # Allowed drop in dev Recall@5 vs. main before the job fails.
+      TOLERANCE: "0.005"
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          path: pr
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install (PR)
+        working-directory: pr
+        run: uv sync
+
+      - name: Tests (PR)
+        working-directory: pr
+        run: uv run pytest -q
+
+      - name: Eval dev (PR)
+        working-directory: pr
+        run: uv run vrag eval > "$RUNNER_TEMP/pr.json"
+
+      - name: Eval dev (main)
+        working-directory: main
+        run: |
+          uv sync
+          uv run vrag eval > "$RUNNER_TEMP/main.json"
+
+      - name: Compare Recall@5
+        run: |
+          python3 - "$RUNNER_TEMP/pr.json" "$RUNNER_TEMP/main.json" <<'EOF'
+          import json, os, sys
+          pr, main = (json.load(open(p)) for p in sys.argv[1:3])
+          tol = float(os.environ["TOLERANCE"])
+          r_pr, r_main = pr["recall@5"], main["recall@5"]
+          ok = r_pr >= r_main - tol
+          lines = [
+              "## Eval (dev split)",
+              "",
+              "| | Recall@5 | MRR@10 |",
+              "|---|---|---|",
+              f"| main | {r_main:.4f} | {main['mrr@10']:.4f} |",
+              f"| PR | {r_pr:.4f} | {pr['mrr@10']:.4f} |",
+              f"| Δ | {r_pr - r_main:+.4f} | {pr['mrr@10'] - main['mrr@10']:+.4f} |",
+              "",
+              ("✅ Recall@5 within tolerance" if ok else "❌ Recall@5 regressed")
+              + f" (threshold: main − {tol} = {r_main - tol:.4f})",
+          ]
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+          sys.exit(0 if ok else 1)
+          EOF
