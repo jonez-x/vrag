@@ -18,6 +18,7 @@ enabled = false            # needs Ollama + `ollama pull bge-m3`; falls back to 
 model = "bge-m3"
 url = "http://localhost:11434"
 cache_dir = ".vrag"        # embedding cache (sqlite-vec), gitignored
+batch_size = 32            # chunks per Ollama embed request
 
 [fusion]
 method = "rrf"
