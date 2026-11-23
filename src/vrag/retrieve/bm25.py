@@ -10,9 +10,24 @@ from ..config import BM25Config
 
 TOKEN_RE = re.compile(r"\w+", re.UNICODE)
 
+# Small German function-word list (articles, pronouns, auxiliaries, question words, particles).
+GERMAN_STOPWORDS = frozenset("""
+aber alle allem allen aller alles als also am an ander andere anderem anderen anderer anderes
+auch auf aus bei beim bin bis bist da damit dann das dass dein deine dem den denn der des dich
+die dies diese diesem diesen dieser dieses dir doch dort du durch ein eine einem einen einer
+eines er es etwas euch euer für gegen gewesen hab habe haben hat hatte hätte ich ihm ihn ihnen
+ihr ihre im in ist ja jede jedem jeden jeder jedes kann kein keine können man manche mein meine
+meinem meinen meiner mich mir mit muss müssen nach nicht nichts noch nun nur ob oder ohne sehr
+sein seine sich sie sind so solche soll sollte sondern sonst um und uns unser unter vom von vor
+war waren warum was weil welche welchem welchen welcher welches wenn wer werde werden wie wieder
+will wir wird wo wollen zu zum zur über
+""".split())
 
-def tokenize(text: str, stemming: bool = False) -> list[str]:
+
+def tokenize(text: str, stemming: bool = False, stopwords: bool = False) -> list[str]:
     tokens = TOKEN_RE.findall(text.lower())
+    if stopwords:
+        tokens = [t for t in tokens if t not in GERMAN_STOPWORDS]
     # stemming: hook for the loop — intentionally not implemented in the baseline
     return tokens
 
@@ -20,7 +35,7 @@ def tokenize(text: str, stemming: bool = False) -> list[str]:
 class BM25Index:
     def __init__(self, docs: list[str], cfg: BM25Config):
         self.cfg = cfg
-        self.tfs = [Counter(tokenize(d, cfg.stemming)) for d in docs]
+        self.tfs = [Counter(self._tokenize(d)) for d in docs]
         self.lens = [sum(tf.values()) for tf in self.tfs]
         self.avgdl = (sum(self.lens) / len(self.lens)) if self.lens else 0.0
         df: Counter = Counter()
@@ -29,9 +44,12 @@ class BM25Index:
         n = len(docs)
         self.idf = {t: math.log(1 + (n - f + 0.5) / (f + 0.5)) for t, f in df.items()}
 
+    def _tokenize(self, text: str) -> list[str]:
+        return tokenize(text, self.cfg.stemming, self.cfg.stopwords)
+
     def scores(self, query: str) -> list[float]:
         k1, b = self.cfg.k1, self.cfg.b
-        q = tokenize(query, self.cfg.stemming)
+        q = self._tokenize(query)
         out = []
         for tf, dl in zip(self.tfs, self.lens):
             s = 0.0

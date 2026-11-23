@@ -11,6 +11,7 @@ enabled = true
 k1 = 1.5
 b = 0.75
 stemming = false           # German light stemming (not implemented yet)
+stopwords = true           # drop German function words at tokenisation
 
 [dense]
 enabled = false            # needs Ollama — see PLAN.md (PR 3)

@@ -56,3 +56,14 @@ def test_engine_search_on_sample_vault():
     assert hits and hits[0].note_path == "Kochen/Sauerteig ansetzen.md"
     assert len({h.note_path for h in hits}) == len(hits)  # deduplicated
     assert "bm25" in hits[0].stage_scores
+
+
+def test_tokenize_drops_german_stopwords():
+    from vrag.retrieve.bm25 import tokenize
+
+    assert tokenize("Wann muss die Kette getauscht werden?") == [
+        "wann", "muss", "die", "kette", "getauscht", "werden"
+    ]
+    assert tokenize("Wann muss die Kette getauscht werden?", stopwords=True) == [
+        "wann", "kette", "getauscht"
+    ]

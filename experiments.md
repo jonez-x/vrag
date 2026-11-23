@@ -21,3 +21,5 @@ Dev split only (`uv run vrag eval`). Objective: Recall@5 (tie-breaker MRR@10).
   Function words have low but non-zero IDF and pull short, unrelated chunks to the top
   (e.g. "Gewohnheiten aufbauen" appears for several unrelated questions).
 - Change: new `bm25.stopwords` flag; a small built-in German stopword list removed at tokenisation.
+- Result: Recall@5 0.8375 → 0.85 · MRR@10 0.7424 → 0.80 — **kept**.
+- Learning: big MRR gain; remaining failures are morphology/compounds (Intervallen, Fahrradkette, Vorkochen).
