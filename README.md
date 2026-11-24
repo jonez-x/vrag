@@ -42,6 +42,7 @@ From a clone (needed for `vrag eval`, which uses the eval set and sample vault i
 ```bash
 uv sync
 uv run vrag search "wie verhindere ich overfitting"   # the sample vault, until you open your own
+uv tool install --editable .   # optional: a plain `vrag` command on your PATH that follows this checkout
 uv run vrag eval          # dev split → eval/results/latest.json
 uv run pytest -q
 ```
