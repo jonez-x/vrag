@@ -6,6 +6,10 @@ split has not been checked by a human yet.
 
 ## [Unreleased]
 
+### Added
+- TUI note view: `Enter` on a search hit (or `Ctrl+O`) opens the full note as rendered markdown, scrolled to the
+  section that matched, with tags, outgoing links and backlinks. `Esc` goes back to the results.
+
 ### Changed
 - A relative `dense.cache_dir` is resolved against the config file's directory, not the working directory, so
   `vrag mcp` started elsewhere reuses the same embedding cache.

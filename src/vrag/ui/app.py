@@ -31,8 +31,10 @@ from textual.widgets import (
 from ..config import Config
 from ..engine import Engine, Hit
 from ..evaluate import run_eval
+from ..vault import resolve_note
 from .config_edit import coerce, config_values, save_changes
 from .logo import OBSIDIAN_THEME, Logo
+from .note_view import NoteScreen
 from .state import STATE_DIR, EvalRecord, History, VaultRegistry, enabled_stages, git_commit
 
 BAR_WIDTH = 20
@@ -67,6 +69,7 @@ def render_breakdown(hit: Hit, hits: list[Hit]) -> Text:
         out.append("█" * filled, style="#8A5CF5")
         out.append("░" * (BAR_WIDTH - filled), style="#3A3A3A")
         out.append(f" {value:8.3f}\n")
+    out.append("\nenter / ctrl+o  open the full note", style="dim")
     return out
 
 
@@ -105,6 +108,7 @@ class VragApp(App):
         Binding("f2", "tab('vaults')", "Vaults"),
         Binding("f3", "tab('settings')", "Settings"),
         Binding("f4", "tab('eval')", "Eval"),
+        Binding("ctrl+o", "open_note", "Open note"),
         Binding("ctrl+s", "save_settings", "Save settings"),
         Binding("ctrl+r", "run_eval", "Run eval"),
         Binding("escape", "focus_query", "Focus search", show=False),
@@ -254,6 +258,24 @@ class VragApp(App):
         if event.row_key.value is not None and self.hits:
             hit = self.hits[int(event.row_key.value)]
             self.query_one("#detail", Static).update(render_breakdown(hit, self.hits))
+
+    @on(DataTable.RowSelected, "#results")
+    def _hit_selected(self, event: DataTable.RowSelected) -> None:
+        self.open_hit(int(event.row_key.value))
+
+    def action_open_note(self) -> None:
+        table = self.query_one("#results", DataTable)
+        if self.query_one(TabbedContent).active == "search" and self.hits:
+            self.open_hit(min(table.cursor_row, len(self.hits) - 1))
+
+    def open_hit(self, i: int) -> None:
+        """Full note of hit ``i``, scrolled to the section that matched."""
+        hit = self.hits[i]
+        notes = self.engine.notes
+        note = notes[hit.note_path]
+        backlinks = [o.title for o in notes.values()
+                     if o.path != note.path and any(resolve_note(notes, t) is note for t in o.links)]
+        self.push_screen(NoteScreen(note, hit.heading, backlinks))
 
     def action_focus_query(self) -> None:
         self.query_one(TabbedContent).active = "search"
