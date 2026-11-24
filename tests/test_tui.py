@@ -65,6 +65,27 @@ def test_search_shows_hits_with_stage_scores(make_app):
     drive(make_app(vault=VAULT), script)
 
 
+def test_slow_stages_debounce_live_search(make_app, tmp_path):
+    # dense on, Ollama unreachable → falls back to BM25, but the config still counts as slow
+    config = tmp_path / "config.toml"
+    text = config.read_text(encoding="utf-8")
+    text = text.replace('url = "http://localhost:11434"', 'url = "http://127.0.0.1:9"')
+    config.write_text(text.replace("[dense]\nenabled = false", "[dense]\nenabled = true"), encoding="utf-8")
+
+    async def script(pilot):
+        app = pilot.app
+        assert app.config.dense.enabled
+        table = app.query_one("#results", DataTable)
+        await pilot.press(*"overfitting")
+        assert table.row_count == 0  # no search per keystroke
+        await pilot.pause(0.5)
+        assert table.row_count > 0  # ran once after the pause
+        await pilot.press("ctrl+a", "ctrl+k", *"sauerteig", "enter")
+        assert table.row_count > 0 and "sauerteig" in app.hits[0].note_path.lower()
+
+    drive(make_app(vault=VAULT), script)
+
+
 def test_tab_bindings_switch_screens(make_app):
     async def script(pilot):
         tabs = pilot.app.query_one(TabbedContent)

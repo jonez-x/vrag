@@ -14,6 +14,7 @@ from textual import on, work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.timer import Timer
 from textual.widgets import (
     Button,
     DataTable,
@@ -35,6 +36,8 @@ from .logo import OBSIDIAN_THEME, Logo
 from .state import STATE_DIR, EvalRecord, History, VaultRegistry, enabled_stages, git_commit
 
 BAR_WIDTH = 20
+SLOW_STAGES = ("dense", "rerank")  # a search costs ~0.3–1.5 s: wait for a typing pause instead of every key
+DEBOUNCE_S = 0.35
 
 
 def stage_columns(hits: list[Hit]) -> list[str]:
@@ -128,6 +131,7 @@ class VragApp(App):
         self.engine = Engine(self.config)
         self.hits: list[Hit] = []
         self.index_error = ""
+        self._search_timer: Timer | None = None
 
     # ── layout ──────────────────────────────────────────────────────────
     def compose(self) -> ComposeResult:
@@ -210,7 +214,25 @@ class VragApp(App):
     # ── search ──────────────────────────────────────────────────────────
     @on(Input.Changed, "#query")
     def _query_changed(self, event: Input.Changed) -> None:
+        self._cancel_pending_search()
+        if any(s in SLOW_STAGES for s in enabled_stages(self.config)):
+            self._search_timer = self.set_timer(DEBOUNCE_S, self._run_pending_search)
+        else:
+            self.run_search(event.value)
+
+    @on(Input.Submitted, "#query")
+    def _query_submitted(self, event: Input.Submitted) -> None:
+        self._cancel_pending_search()  # Enter searches right away, also when debounced
         self.run_search(event.value)
+
+    def _run_pending_search(self) -> None:
+        self._search_timer = None
+        self.run_search(self.query_one("#query", Input).value)
+
+    def _cancel_pending_search(self) -> None:
+        if self._search_timer is not None:
+            self._search_timer.stop()
+            self._search_timer = None
 
     def run_search(self, query: str) -> None:
         self.hits = self.engine.search(query) if query.strip() else []
