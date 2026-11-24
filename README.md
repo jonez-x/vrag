@@ -82,7 +82,7 @@ The model is downloaded from Hugging Face on first use. Without the extra or the
 
 | Tab | Key | What it does |
 |---|---|---|
-| Search | `F1` | Live search as you type; results table plus a per-stage score breakdown (BM25 / dense / graph / rerank, whichever are on) for the highlighted hit. `Esc` jumps back to the search box. |
+| Search | `F1` | Live search as you type (with dense or rerank on: once you pause typing, or on `Enter`); results table plus a per-stage score breakdown (BM25 / dense / graph / rerank, whichever are on) for the highlighted hit. `Esc` jumps back to the search box. |
 | Vaults | `F2` | Add a vault by path, `Enter` on a row opens it, *Remove* drops it. Remembered in `.vrag/vaults.json`. |
 | Settings | `F3` | Every `config.toml` option as a form; `Ctrl+S` saves and re-indexes. Only the changed values are rewritten, comments and layout stay. |
 | Eval | `F4` | `Ctrl+R` scores the dev split on the sample vault (from a clone); history with deltas lives in `.vrag/eval_history.jsonl`. |
@@ -140,7 +140,8 @@ outside the vault and `.obsidian/` are all refused.
 | **`loop/run-02`** | **hybrid + graph 0.05, dense RRF weight 1.2 ("full")** | **1.000** | **0.988** |
 
 Latency per query on an Apple-silicon Mac, model already loaded: BM25 < 1 ms, hybrid ~23 ms.
-Reranking adds ~270 ms on BM25 and 0.6–1.5 s on hybrid, which is too slow for live TUI search.
+Reranking adds ~270 ms on BM25 and 0.6–1.5 s on hybrid, which is too slow to run on every keystroke; the TUI
+waits for a typing pause instead.
 Full per-PR history, including what didn't work: [`PROGRESS.md`](PROGRESS.md), [`experiments.md`](experiments.md).
 Regenerate the chart with `python scripts/recall_chart.py`.
 

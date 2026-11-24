@@ -10,6 +10,8 @@ split has not been checked by a human yet.
 - A relative `dense.cache_dir` is resolved against the config file's directory, not the working directory, so
   `vrag mcp` started elsewhere reuses the same embedding cache.
 - An explicit `--config` that does not exist is now an error instead of silently using the built-in defaults.
+- TUI search no longer runs on every keystroke when dense retrieval or reranking is on: it waits for a 350 ms
+  typing pause, and `Enter` searches immediately. BM25-only search stays instant.
 
 ## [0.1.0] — unreleased
 
