@@ -24,10 +24,16 @@ The PyPI name is `vrag-obsidian` (`vrag` was taken); the command and the import 
 
 ## Quickstart
 ```bash
-vrag --vault ~/Notes search "wie verhindere ich overfitting"
-vrag --vault ~/Notes search "fahrradkette ölen" --json -k 3
-vrag --vault ~/Notes tui
+vrag tui ~/Notes                                  # open your vault in the terminal UI, once
+vrag                                              # from then on: reopens the last vault, from any folder
+vrag search "wie verhindere ich overfitting"      # CLI search in the same vault
+vrag search "fahrradkette ölen" --json -k 3
+vrag search "sauerteig" --vault ~/Other           # another vault (now the remembered one)
 ```
+Which vault: `--vault` / `-v` (before or after the command) → `$VRAG_VAULT` → the current folder if it is an
+Obsidian vault (has `.obsidian/`) → the last vault you opened, kept in `~/.config/vrag/vaults.json`
+(`$VRAG_HOME` moves it). On the very first start the TUI asks for the vault folder.
+
 Without a `config.toml` in the working directory vrag uses the built-in defaults, which match the
 [`config.toml`](config.toml) in this repo. Pass `--config path/to/config.toml` to change them; vrag stops with an
 error if that file does not exist. Relative paths inside a config file (`dense.cache_dir`) are resolved next to it.
@@ -35,7 +41,7 @@ error if that file does not exist. Relative paths inside a config file (`dense.c
 From a clone (needed for `vrag eval`, which uses the eval set and sample vault in the repo):
 ```bash
 uv sync
-uv run vrag --vault vaults/sample search "wie verhindere ich overfitting"
+uv run vrag search "wie verhindere ich overfitting"   # the sample vault, until you open your own
 uv run vrag eval          # dev split → eval/results/latest.json
 uv run pytest -q
 ```
@@ -83,7 +89,7 @@ The model is downloaded from Hugging Face on first use. Without the extra or the
 | Tab | Key | What it does |
 |---|---|---|
 | Search | `F1` | Live search as you type (with dense or rerank on: once you pause typing, or on `Enter`); results table plus a per-stage score breakdown (BM25 / dense / graph / rerank, whichever are on) for the highlighted hit. `Enter` on a hit (or `Ctrl+O`) opens the full note, scrolled to the matching section, with tags, links and backlinks. `Esc` jumps back to the search box. |
-| Vaults | `F2` | Add a vault by path, `Enter` on a row opens it, *Remove* drops it. Remembered in `.vrag/vaults.json`. |
+| Vaults | `F2` | Add a vault by path, `Enter` on a row opens it, *Remove* drops it. Remembered per user in `~/.config/vrag/vaults.json`, so `vrag` reopens the last one from any folder. |
 | Settings | `F3` | Every `config.toml` option as a form; `Ctrl+S` saves and re-indexes. Only the changed values are rewritten, comments and layout stay. |
 | Eval | `F4` | `Ctrl+R` scores the dev split on the sample vault (from a clone); history with deltas lives in `.vrag/eval_history.jsonl`. |
 

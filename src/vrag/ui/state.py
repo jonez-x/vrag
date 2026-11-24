@@ -1,11 +1,13 @@
-"""Local TUI state under ``.vrag/`` (gitignored): eval score history + vault list.
+"""Local state: eval score history under ``.vrag/`` (gitignored), vault list per user.
 
+The vault list lives in ``user_dir()`` so the last vault is remembered whatever directory vrag starts in.
 Nothing here is ever written to ``eval/`` or ``vaults/``.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -14,6 +16,13 @@ from pathlib import Path
 from ..config import Config
 
 STATE_DIR = Path(".vrag")
+
+
+def user_dir() -> Path:
+    """Per-user state: ``$VRAG_HOME``, else ``$XDG_CONFIG_HOME/vrag``, else ``~/.config/vrag``."""
+    if home := os.environ.get("VRAG_HOME"):
+        return Path(home).expanduser()
+    return Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config").expanduser() / "vrag"
 STAGES = ("bm25", "dense", "graph", "rerank")
 
 
@@ -102,6 +111,21 @@ class VaultRegistry:
             self.vaults.append(fallback)
         if self.active not in self.vaults:
             self.active = self.vaults[0] if self.vaults else None
+
+    @classmethod
+    def for_user(cls, fallback: str | None = None) -> VaultRegistry:
+        """The per-user registry; adopts a vault list left in ``./.vrag/`` by vrag ≤ 0.1."""
+        reg = cls(user_dir())
+        legacy = STATE_DIR / "vaults.json"
+        if not reg.path.exists() and legacy.exists():
+            old = cls(STATE_DIR)
+            reg.vaults = [str(Path(v).resolve()) for v in old.vaults]
+            reg.active = str(Path(old.active).resolve()) if old.active else None
+            reg.save()
+        if fallback and not reg.vaults:
+            reg.vaults.append(fallback)
+            reg.active = fallback
+        return reg
 
     def add(self, path: str, save: bool = True) -> None:
         if path not in self.vaults:

@@ -7,10 +7,17 @@ split has not been checked by a human yet.
 ## [Unreleased]
 
 ### Added
+- `vrag` without a command opens the TUI; `vrag tui ~/Notes` opens a vault directly. `--vault` / `-v` works before
+  and after the command, expands `~`, and is remembered, so later calls need no vault at all. Vault order:
+  `--vault` → `$VRAG_VAULT` → current folder if it has `.obsidian/` → last used. Without any, vrag explains what
+  to pass, and the TUI starts on its Vaults tab with the path field focused.
 - TUI note view: `Enter` on a search hit (or `Ctrl+O`) opens the full note as rendered markdown, scrolled to the
   section that matched, with tags, outgoing links and backlinks. `Esc` goes back to the results.
 
 ### Changed
+- The vault list moved from `./.vrag/vaults.json` to `~/.config/vrag/vaults.json` (`$VRAG_HOME` overrides); an
+  existing list in the working directory is adopted on first use. `vrag eval` still uses the sample vault unless
+  `--vault` is given.
 - A relative `dense.cache_dir` is resolved against the config file's directory, not the working directory, so
   `vrag mcp` started elsewhere reuses the same embedding cache.
 - An explicit `--config` that does not exist is now an error instead of silently using the built-in defaults.
