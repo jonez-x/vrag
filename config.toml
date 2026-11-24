@@ -19,7 +19,7 @@ acronyms = true            # index initials of capitalised word runs ("Machine L
 enabled = false            # needs Ollama + `ollama pull bge-m3`; falls back to BM25 if missing
 model = "bge-m3"
 url = "http://localhost:11434"
-cache_dir = ".vrag"        # embedding cache (sqlite-vec), gitignored
+cache_dir = ".vrag"        # embedding cache (sqlite-vec), gitignored; relative to this file
 batch_size = 32            # chunks per Ollama embed request
 
 [fusion]

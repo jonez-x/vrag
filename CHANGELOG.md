@@ -4,6 +4,13 @@ All notable changes to this project. Format follows [Keep a Changelog](https://k
 versions follow [Semantic Versioning](https://semver.org/). Scores are dev split only (40 queries); the held-out
 split has not been checked by a human yet.
 
+## [Unreleased]
+
+### Changed
+- A relative `dense.cache_dir` is resolved against the config file's directory, not the working directory, so
+  `vrag mcp` started elsewhere reuses the same embedding cache.
+- An explicit `--config` that does not exist is now an error instead of silently using the built-in defaults.
+
 ## [0.1.0] — unreleased
 
 First release, published on PyPI as `vrag-obsidian` (command and import package: `vrag`).

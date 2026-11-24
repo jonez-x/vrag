@@ -9,7 +9,7 @@ from pathlib import Path
 from .chunking import Chunk, chunk_note
 from .config import Config
 from .retrieve.bm25 import BM25Index
-from .retrieve.dense import DenseIndex, Embedder, EmbedderUnavailable
+from .retrieve.dense import DenseIndex, Embedder, EmbedderUnavailable, VectorStore
 from .retrieve.fusion import best_per_group, rrf
 from .retrieve.graph import LinkGraph, apply_boost
 from .retrieve.rerank import CrossEncoder, Reranker, RerankerUnavailable
@@ -59,7 +59,8 @@ class Engine:
         self._graph = LinkGraph(self.notes) if self.config.graph.enabled else None
         if self.config.dense.enabled:
             try:
-                self._dense = DenseIndex(texts, self.config.dense, self.embedder)
+                store = VectorStore(self.config.resolve(self.config.dense.cache_dir) / "embeddings.sqlite")
+                self._dense = DenseIndex(texts, self.config.dense, self.embedder, store)
             except EmbedderUnavailable as e:
                 self._dense_unavailable(e)
         keep = self._reranker is not None and self._reranker.model == self.config.rerank.model

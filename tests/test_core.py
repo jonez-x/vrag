@@ -128,6 +128,22 @@ def test_builtin_defaults_match_config_toml():
     assert Config.load(ROOT / "missing.toml") == Config()
 
 
+def test_config_resolves_relative_paths_against_its_file(tmp_path):
+    assert Config.load(ROOT / "config.toml").resolve(".vrag") == ROOT / ".vrag"
+    assert Config().resolve(".vrag") == Path(".vrag")  # built-in defaults: working directory
+    assert Config.load(ROOT / "config.toml").resolve(tmp_path) == tmp_path
+
+
+def test_cli_rejects_missing_explicit_config(tmp_path, capsys):
+    import pytest
+
+    from vrag.cli import main
+
+    with pytest.raises(SystemExit) as exc:
+        main(["--config", str(tmp_path / "nope.toml"), "search", "x"])
+    assert "config file not found" in str(exc.value.code)
+
+
 def test_cli_version_matches_package_metadata(capsys):
     import tomllib
     from importlib.metadata import version

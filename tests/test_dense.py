@@ -137,3 +137,14 @@ def test_ollama_embedder_parses_response(monkeypatch):
     monkeypatch.setattr(dense.urllib.request, "urlopen", fake_urlopen)
     assert OllamaEmbedder("bge-m3").embed(["hallo"]) == [[0.1, 0.2]]
     assert seen["body"] == {"model": "bge-m3", "input": ["hallo"]}
+
+
+def test_relative_cache_dir_lives_next_to_config_file(tmp_path, monkeypatch):
+    # an MCP client starts vrag in some other cwd: the cache must not move with it
+    conf = tmp_path / "conf" / "vrag.toml"
+    conf.parent.mkdir()
+    conf.write_text('[dense]\nenabled = true\ncache_dir = "cache"\n', encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    Engine(Config.load(conf), embedder=FakeEmbedder()).index(ROOT / "vaults" / "sample")
+    assert (tmp_path / "conf" / "cache" / "embeddings.sqlite").is_file()
+    assert not (tmp_path / "cache").exists()

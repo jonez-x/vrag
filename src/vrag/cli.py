@@ -16,8 +16,17 @@ from .evaluate import run_eval
 DEFAULT_VAULT = "vaults/sample"
 
 
+def _config(args) -> Config:
+    # an explicit --config must exist: silently falling back to defaults hides typos and wrong cwds
+    if args.config is None:
+        return Config.load("config.toml")
+    if not Path(args.config).is_file():
+        sys.exit(f"vrag: config file not found: {args.config}")
+    return Config.load(args.config)
+
+
 def _engine(args) -> Engine:
-    return Engine(Config.load(args.config)).index(args.vault)
+    return Engine(_config(args)).index(args.vault)
 
 
 def cmd_search(args) -> int:
@@ -48,19 +57,19 @@ def cmd_tui(args) -> int:
     from .ui.app import run  # Textual is only imported when the TUI is used
 
     # only an explicit --vault overrides the vault remembered in .vrag/
-    run(config_path=args.config, vault=None if args.vault == DEFAULT_VAULT else args.vault)
+    run(config_path=args.config or "config.toml", vault=None if args.vault == DEFAULT_VAULT else args.vault)
     return 0
 
 
 def cmd_mcp(args) -> int:
     from .mcp_server import run
 
-    return run(args.mcp_vaults or [args.vault], Config.load(args.config))
+    return run(args.mcp_vaults or [args.vault], _config(args))
 
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="vrag", description="Local-first retrieval for Obsidian vaults")
-    p.add_argument("--config", default="config.toml")
+    p.add_argument("--config", default=None, help="config file (default: ./config.toml if present)")
     p.add_argument("--vault", default=DEFAULT_VAULT)
     p.add_argument("--version", action="version", version=f"vrag {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True)
