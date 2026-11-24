@@ -29,7 +29,8 @@ vrag --vault ~/Notes search "fahrradkette ölen" --json -k 3
 vrag --vault ~/Notes tui
 ```
 Without a `config.toml` in the working directory vrag uses the built-in defaults, which match the
-[`config.toml`](config.toml) in this repo. Pass `--config path/to/config.toml` to change them.
+[`config.toml`](config.toml) in this repo. Pass `--config path/to/config.toml` to change them; vrag stops with an
+error if that file does not exist. Relative paths inside a config file (`dense.cache_dir`) are resolved next to it.
 
 From a clone (needed for `vrag eval`, which uses the eval set and sample vault in the repo):
 ```bash
@@ -97,7 +98,8 @@ claude mcp add vrag -- uvx --from vrag-obsidian vrag mcp --vault /path/to/your/v
 # from a clone instead:
 claude mcp add vrag -- uv run --directory /path/to/vrag vrag mcp --vault /path/to/your/vault
 ```
-Use absolute paths, also for `--config` if you pass one: the server's working directory is not your shell's.
+Use absolute paths, also for `--config` if you pass one: the server's working directory is not your shell's
+(a `--config` that cannot be found is an error, not a silent fallback to the defaults).
 Repeat `--vault [NAME=]PATH` to expose several vaults. Then run `/mcp` in Claude Code to check that `vrag` is connected.
 
 | Tool | What it does |

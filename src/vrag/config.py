@@ -69,6 +69,8 @@ class Config:
     graph: GraphConfig = field(default_factory=GraphConfig)
     rerank: RerankConfig = field(default_factory=RerankConfig)
     search: SearchConfig = field(default_factory=SearchConfig)
+    # file this config was loaded from (None = built-in defaults); not part of the settings
+    source: Path | None = field(default=None, compare=False, repr=False)
 
     @classmethod
     def load(cls, path: str | Path = "config.toml") -> Config:
@@ -77,7 +79,16 @@ class Config:
             return cls()
         with path.open("rb") as f:
             data = tomllib.load(f)
-        return _from_dict(cls, data)
+        cfg = _from_dict(cls, data)
+        cfg.source = path.resolve()
+        return cfg
+
+    def resolve(self, p: str | Path) -> Path:
+        """Relative paths in a config file mean "next to that file", not "in the working directory"."""
+        p = Path(p).expanduser()
+        if p.is_absolute() or self.source is None:
+            return p
+        return self.source.parent / p
 
 
 def _from_dict(dc_type, data: dict):
