@@ -4,10 +4,12 @@ import asyncio
 from pathlib import Path
 
 import pytest
+from textual.containers import VerticalScroll
 from textual.widgets import DataTable, Input, Sparkline, Static, Switch, TabbedContent
 
 from vrag.engine import Hit
 from vrag.ui.app import VragApp, render_breakdown, stage_columns
+from vrag.ui.note_view import NoteScreen, wikilinks_to_markdown
 from vrag.ui.state import History
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -82,8 +84,58 @@ def test_slow_stages_debounce_live_search(make_app, tmp_path):
         assert table.row_count > 0  # ran once after the pause
         await pilot.press("ctrl+a", "ctrl+k", *"sauerteig", "enter")
         assert table.row_count > 0 and "sauerteig" in app.hits[0].note_path.lower()
+        await pilot.press(*" roggen", "ctrl+o")  # a pending search still runs behind the note view
+        await pilot.pause(0.5)
+        assert isinstance(app.screen, NoteScreen)
+        await pilot.press("escape")
+        assert app.query_one("#query", Input).value == "sauerteig roggen" and table.row_count > 0
 
     drive(make_app(vault=VAULT), script)
+
+
+def test_wikilinks_render_as_text():
+    md = wikilinks_to_markdown("Siehe [[Andere Notiz]] und [[Dritte#Teil|Alias]].")
+    assert md == "Siehe *Andere Notiz* und *Alias*."
+
+
+def test_open_hit_shows_full_note_at_matching_heading(make_app):
+    async def script(pilot):
+        app = pilot.app
+        await pilot.press(*"overfitting", "tab", "enter")
+        await pilot.pause()
+        screen = app.screen
+        assert isinstance(screen, NoteScreen)
+        hit = app.hits[0]
+        note = app.engine.notes[hit.note_path]
+        assert screen.note is note and screen.heading == hit.heading
+        header = str(screen.query_one("#note-header", Static).render())
+        assert note.title in header and note.path in header
+        await pilot.press("escape")
+        assert not isinstance(app.screen, NoteScreen)
+        await pilot.press("escape", "ctrl+o")  # also from the search box: opens the highlighted hit
+        await pilot.pause()
+        assert isinstance(app.screen, NoteScreen)
+
+    drive(make_app(vault=VAULT), script)
+
+
+def test_note_view_scrolls_to_matching_section_and_lists_backlinks(make_app, tmp_path):
+    vault = tmp_path / "long"
+    vault.mkdir()
+    filler = "\n".join(f"Zeile {i} mit Fülltext." for i in range(80))
+    (vault / "Lang.md").write_text(f"# Lang\n## Anfang\n{filler}\n## Zielabschnitt\nquokka\n", encoding="utf-8")
+    (vault / "Verweis.md").write_text("# Verweis\nSiehe [[Lang]].", encoding="utf-8")
+
+    async def script(pilot):
+        app = pilot.app
+        await pilot.press(*"quokka", "ctrl+o")
+        await pilot.pause(0.3)
+        screen = app.screen
+        assert isinstance(screen, NoteScreen) and screen.heading == "Zielabschnitt"
+        assert screen.backlinks == ["Verweis"]
+        assert screen.query_one("#note-body", VerticalScroll).scroll_y > 0
+
+    drive(make_app(vault=str(vault)), script)
 
 
 def test_tab_bindings_switch_screens(make_app):

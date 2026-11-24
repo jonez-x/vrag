@@ -82,7 +82,7 @@ The model is downloaded from Hugging Face on first use. Without the extra or the
 
 | Tab | Key | What it does |
 |---|---|---|
-| Search | `F1` | Live search as you type (with dense or rerank on: once you pause typing, or on `Enter`); results table plus a per-stage score breakdown (BM25 / dense / graph / rerank, whichever are on) for the highlighted hit. `Esc` jumps back to the search box. |
+| Search | `F1` | Live search as you type (with dense or rerank on: once you pause typing, or on `Enter`); results table plus a per-stage score breakdown (BM25 / dense / graph / rerank, whichever are on) for the highlighted hit. `Enter` on a hit (or `Ctrl+O`) opens the full note, scrolled to the matching section, with tags, links and backlinks. `Esc` jumps back to the search box. |
 | Vaults | `F2` | Add a vault by path, `Enter` on a row opens it, *Remove* drops it. Remembered in `.vrag/vaults.json`. |
 | Settings | `F3` | Every `config.toml` option as a form; `Ctrl+S` saves and re-indexes. Only the changed values are rewritten, comments and layout stay. |
 | Eval | `F4` | `Ctrl+R` scores the dev split on the sample vault (from a clone); history with deltas lives in `.vrag/eval_history.jsonl`. |
