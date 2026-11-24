@@ -72,3 +72,21 @@ Template:
 - **Eval (dev):** default 1.0 / 0.9208 → unchanged
 - **Learnings:** first release worker hit the usage limit mid-run; its pushed commits were picked up by a second worker without rework. Renaming the package to `vrag-obsidian` left a stale venv entry point locally — `uv sync --reinstall-package vrag-obsidian` fixes it.
 - **Open problems:** PyPI upload needs a one-time pending publisher on pypi.org (project `vrag-obsidian`, repo `jonez-x/vrag`, workflow `publish.yml`, environment `pypi`), then re-run the publish job for `v0.1.0`. Demo GIF shows BM25 only (recorded without Ollama). Held-out split still unchecked.
+
+## 2026-11-24 — PR 11 `fix/config-paths`
+- **Result:** merged (#11) — relative `dense.cache_dir` resolves next to the config file (`Config.source` / `Config.resolve()`); an explicit `--config` that doesn't exist exits with an error
+- **Eval (dev):** default 1.0 / 0.9208 → unchanged
+- **Learnings:** local experiment configs in `.vrag/` had `cache_dir = ".vrag"`, which now means `.vrag/.vrag`; set to `"."`.
+- **Open problems:** TUI state (`.vrag/` history + vault list) still lives in the working directory.
+
+## 2026-11-24 — PR 12 `feat/tui-debounce`
+- **Result:** merged (#12) — with dense or rerank on, live search waits for a 350 ms typing pause; `Enter` searches at once; BM25-only unchanged
+- **Eval (dev):** unchanged (no retrieval change)
+- **Learnings:** search stays on the main thread: the sqlite embedding cache connection can't be shared across threads.
+- **Open problems:** a slow search still blocks the UI while it runs (only once per pause now).
+
+## 2026-11-24 — PR 13 `feat/tui-note-view`
+- **Result:** merged (#13) — `Enter` on a hit / `Ctrl+O` opens the full note (rendered markdown, scrolled to the matched section, tags, links, backlinks)
+- **Eval (dev):** unchanged (no retrieval change)
+- **Learnings:** `MarkdownViewer` swallows `TableOfContentsUpdated`, so the scroll-to-heading uses a plain `Markdown` in a `VerticalScroll`; a long-note test caught it. A debounced search firing behind the modal is harmless and keeps results in sync with the query box.
+- **Open problems:** no "open in Obsidian" key yet. Holdout split still unchecked (hook blocks agents; human run needed).
