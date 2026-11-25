@@ -90,3 +90,9 @@ Template:
 - **Eval (dev):** unchanged (no retrieval change)
 - **Learnings:** `MarkdownViewer` swallows `TableOfContentsUpdated`, so the scroll-to-heading uses a plain `Markdown` in a `VerticalScroll`; a long-note test caught it. A debounced search firing behind the modal is harmless and keeps results in sync with the query box.
 - **Open problems:** no "open in Obsidian" key yet. Holdout split still unchecked (hook blocks agents; human run needed).
+
+## 2026-11-25 — PR 14 `feat/cli-vault-ux`
+- **Result:** merged (#14) — bare `vrag` opens the TUI, `vrag tui PATH`, `--vault`/`-v` before or after the command, vault remembered per user in `~/.config/vrag/vaults.json` (adopts `./.vrag/vaults.json`), `$VRAG_VAULT`, cwd with `.obsidian/`, TUI first start asks for the vault; README documents `uv tool install --editable .` for a plain `vrag` command
+- **Eval (dev):** unchanged (no retrieval change)
+- **Learnings:** argparse shares `parents` actions, so `set_defaults` on the main parser leaked into subcommands and dropped a top-level `--config`. Tests must isolate both `VRAG_HOME` and the legacy `./.vrag/` dir, or they read the developer's real vault list.
+- **Open problems:** `vrag mcp` without `--vault` now silently uses the remembered vault. Holdout split still unchecked.
