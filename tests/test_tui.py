@@ -22,7 +22,8 @@ def make_app(tmp_path):
     config.write_text((ROOT / "config.toml").read_text(encoding="utf-8"), encoding="utf-8")
 
     def make(**kw) -> VragApp:
-        opts = dict(config_path=config, state_dir=tmp_path / ".vrag", eval_dir=ROOT / "eval", eval_vault=VAULT)
+        opts = dict(config_path=config, state_dir=tmp_path / ".vrag", eval_dir=ROOT / "eval", eval_vault=VAULT,
+                    vaults_dir=tmp_path / ".vrag")
         return VragApp(**(opts | kw))
 
     return make
@@ -193,6 +194,19 @@ def test_vaults_add_switch_and_missing(make_app, tmp_path):
 
     drive(app, script)
     assert make_app().registry.active == str(other)  # remembered in .vrag/
+
+
+def test_first_start_without_vault_asks_for_one(make_app, tmp_path):
+    app = make_app(eval_vault=str(tmp_path / "no-sample-here"))
+
+    async def script(pilot):
+        assert app.registry.active is None
+        assert app.query_one(TabbedContent).active == "vaults"
+        assert app.query_one("#vault-path", Input).has_focus
+        await pilot.press(*VAULT, "enter")
+        assert app.registry.active == VAULT and len(app.engine.notes) > 0
+
+    drive(app, script)
 
 
 def test_eval_runs_dev_split_and_records_history(make_app, tmp_path):

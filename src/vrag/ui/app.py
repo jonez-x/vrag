@@ -122,11 +122,17 @@ class VragApp(App):
         state_dir: str | Path = STATE_DIR,
         eval_dir: str | Path = "eval",
         eval_vault: str = "vaults/sample",
+        vaults_dir: str | Path | None = None,
     ):
         super().__init__()
         self.config_path = Path(config_path)
         self.config = Config.load(self.config_path)
-        self.registry = VaultRegistry(state_dir, fallback=eval_vault)
+        # vault list: per user (default), so the last vault opens from any directory
+        fallback = eval_vault if Path(eval_vault).is_dir() else None
+        if vaults_dir is None:
+            self.registry = VaultRegistry.for_user(fallback)
+        else:
+            self.registry = VaultRegistry(vaults_dir, fallback=fallback)
         if vault:
             self.registry.activate(vault)
         self.history = History(state_dir)
@@ -150,7 +156,7 @@ class VragApp(App):
                     yield Static("Type to search.", id="detail")
             with TabPane("Vaults", id="vaults"):
                 with Horizontal(classes="row"):
-                    yield Input(placeholder="/path/to/vault", id="vault-path")
+                    yield Input(placeholder="Vault folder, e.g. ~/Documents/Notes  (Enter opens it)", id="vault-path")
                     yield Button("Add & open", id="vault-add", variant="primary")
                     yield Button("Remove", id="vault-remove", variant="error")
                 yield DataTable(id="vault-table", cursor_type="row")
@@ -190,7 +196,12 @@ class VragApp(App):
         )
         self.reindex()
         self.refresh_history()
-        self.query_one("#query", Input).focus()
+        if self.registry.active:
+            self.query_one("#query", Input).focus()
+        else:  # first start: nothing to search yet, ask for the vault folder
+            self.query_one(TabbedContent).active = "vaults"
+            self.query_one("#vault-path", Input).focus()
+            self.notify("Type the path to your Obsidian vault and press Enter.", timeout=8)
 
     # ── engine ──────────────────────────────────────────────────────────
     def reindex(self) -> None:
@@ -303,7 +314,7 @@ class VragApp(App):
         path = field.value.strip()
         if not path:
             return
-        path = str(Path(path).expanduser())
+        path = str(Path(path).expanduser().resolve())
         if not Path(path).is_dir():
             self.notify(f"Not a directory: {path}", severity="error")
             return
